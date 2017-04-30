@@ -1,0 +1,17 @@
+{
+  "name": "steam-key",
+  "version": "1.0.0",
+  "description": "Steam key remote redeeming",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Makazeu",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "latest",
+    "express": "latest",
+    "hbs": "latest",
+    "path": "latest"
+  }
+}

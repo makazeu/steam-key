@@ -1,0 +1,90 @@
+
+/* site */
+.site-title {
+    font-size: 2em;
+}
+
+.site-title:hover {
+    color: #F65;
+}
+
+/* home page */
+.my-table-title {
+    color: slategrey;
+    font-size: 150%;
+}
+
+/* table */
+table {
+    font-size: 120%;
+}
+
+table a {
+    color: lightslategrey;
+}
+
+th {
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+
+/* poetry */
+.poetry-block {
+    display: none;
+}
+
+.poetry-author {
+    color: #666;
+    font-size: 1.4em;
+    margin:0px 0px 0px 50px;
+}
+
+.poetry-author:hover {
+    color: #69C;
+}
+
+.poetry-title {
+    font-size: 2.0em;
+}
+
+.poetry-content {
+    font-size: 1.5em;
+}
+
+
+/* data block */
+.dataBlock {
+    display: none;
+}
+
+/* loading block */
+.my-loading {
+    display: none;
+}
+
+/* Pager font fix */
+.pager-font {
+    color: darkslategrey;
+}
+
+/* search panel style */
+.my-panel {
+    text-align: left;
+}
+
+/* search block */
+.search-block {
+    font-size: 120%;
+    display: none;
+}
+
+.search-block a:hover {
+    color: #F65;
+}
+
+.search-highlight {
+    background-color: yellow;
+}
