@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>WebSocket</title>
+    <title>Steam 雲激活</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- StyleSheets -->
     <link href="/static/style/bootstrap.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
     <div class="container">
         <div class="header clearfix">
             <a class="text-muted site-title">
-                <span class="glyphicon glyphicon-cloud"></span> Steam雲激活
+                <span class="glyphicon glyphicon-cloud"></span> Steam 雲激活
             </a>
         </div>
 
@@ -28,18 +28,26 @@
                 当前状态： <span id="panel_status"></span>
             </div>
 
-            <div class="panel-body">
-                温馨提醒：请确保本网页处于HTTPS连接中，以保证您的账号安全！
-
-            </div>
+            <div class="panel-body"></div>
 
             <!-- Table -->
-            <table class="table">
+            <div class="table-responsive table-condensed">
+                <table class="table table-hover" style="display: none">
+                    <caption>激活记录：</caption>
+                    <thead>
+                        <th>No.</th>
+                        <th>Key</th>
+                        <th>结果</th>
+                        <th>详情</th>
+                        <th>Sub</th>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div> <!-- /table div ends -->
 
-            </table>
-        </div> <!-- /panel -->
+        </div> <!-- /panel div ends -->
 
-        <from class="form-horizontal">
+        <from class="form-horizontal" style="display: none">
             <div id="accountInfo">
                 <div class="form-group">
                     <label for="inputUsername" class="col-sm-2 control-label">Username</label>

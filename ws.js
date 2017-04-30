@@ -49,6 +49,7 @@ module.exports = function(server) {
                     }));
                 });
             } 
+
             // request Redeem
             else if (data.action == 'redeem') {
 
@@ -60,11 +61,15 @@ module.exports = function(server) {
                 });
 
                 domain.run( function() {
-                    let resData = { 'action': 'redeem', 'detail': [] };
+                    let resData = { 'action': 'redeem', 'detail': {} };
 
                     steamClient.redeemKey(data.key, function(result, details, packages ){
-                        resData['detail']['result'] = result;
-                        resData['detail']['details'] = details;
+
+                        let allResults = require('./Eresult');
+                        let allPurchaseResults = require('./EPurchaseResult');
+                        
+                        resData['detail']['result'] = allResults[result.toString()];
+                        resData['detail']['details'] = allPurchaseResults[details.toString()];
                         resData['detail']['packages'] = packages;
 
                         console.log(resData);
