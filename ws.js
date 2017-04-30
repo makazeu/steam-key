@@ -3,12 +3,14 @@ const WebSocket = require('ws');
 module.exports = function(server) {
 
     const wss = new WebSocket.Server({ server });
+    const dm = require('domain');
 
     wss.on('connection', function connection(ws) {
+
         //const location = url.parse(ws.upgradeReq.url, true);
         console.log('Connected!');
 
-        ws.send(JSON.stringify({
+        trySend(ws, JSON.stringify({
             'action': 'connect',
             'result': 'success',
         }));
@@ -17,48 +19,85 @@ module.exports = function(server) {
         let steamClient = new steamUser(ws);
 
         ws.on('message', function incoming(message) {
+
             console.log('received: %s', message);
             let data = JSON.parse(message);
             
+            // request LogOn
             if (data.action == 'logOn') {
-                steamClient.logOn({
-                    'accountName'   : data.username,
-                    'password'      : data.password,
-                    'twoFactorCode' : data.authcode
+
+                let domain = dm.create();
+                domain.on('error', function (err) {
+                    sendErrorMsg(ws, 'logOn', err.message)
                 });
+
+                domain.run(function () {
+                    steamClient.logOn({
+                        'accountName'   : data.username,
+                        'password'      : data.password,
+                        'twoFactorCode' : data.authcode
+                    });
+                });
+                
                 steamClient.once('loggedOn', function(details) {
                     console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
-                    ws.send(JSON.stringify({
+                    trySend(ws, JSON.stringify({
                         'action': 'logOn',
                         'result': 'success',
-                        'detail': {
-                            'steamID': steamClient.steamID.getSteam3RenderedID()
-                        }
+                        'detail': { 'steamID': steamClient.steamID.getSteam3RenderedID() }
                     }));
                 });
-            } else if (data.action == 'redeem') {
+            } 
+            // request Redeem
+            else if (data.action == 'redeem') {
+
                 console.log('Key: %s', data.key);
-                if (true) {
-                    let resData = { 'action': 'redeem' };
+
+                let domain = dm.create();
+                domain.on('error', function (err) {
+                    sendErrorMsg(ws, 'redeem', err.message)
+                });
+
+                domain.run( function() {
+                    let resData = { 'action': 'redeem', 'detail': [] };
 
                     steamClient.redeemKey(data.key, function(result, details, packages ){
-                        resData['result'] = result;
-                        resData['details'] = details;
-                        resData['packages'] = packages;
+                        resData['detail']['result'] = result;
+                        resData['detail']['details'] = details;
+                        resData['detail']['packages'] = packages;
 
-                        resData['test'] = 'test';
                         console.log(resData);
-                        ws.send(JSON.stringify(resData));
+
+                        trySend(ws, JSON.stringify(resData));
                     });        
-                }
-            }
+                });
+            }  // data.action == redeem
             
-            
-        });
+        }); // ws.on == message
 
         ws.on('close', function close(){
             console.log('close!');
         });
     });
+}
+
+function sendErrorMsg(ws, action, message) {
+    try {
+        ws.send(JSON.stringify({
+            'action' : action,
+            'result' : 'failed',
+            'message':  message
+        }));
+    } catch (errore) {
+        //do nothing
+    }
+}
+
+function trySend(ws, stuff) {
+    try {
+        ws.send(stuff);
+    } catch (error) {
+        //do nothing
+    }
 }

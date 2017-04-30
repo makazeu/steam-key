@@ -28,6 +28,11 @@ a:active {
     color: #F65;
 }
 
+/* panel */
+.my-panel {
+    font-size: 1.2em;
+}
+
 
 /* copyright info at bottom */
 .copyright {
