@@ -154,9 +154,9 @@
 
         let data = JSON.stringify({
             action   : 'logOn',
-            username : $('#inputUsername').val().trim(),
-            password : $('#inputPassword').val().trim(),
-            authcode : $('#inputCode').val().trim()
+            username : username,
+            password : password,
+            authcode : authcode
         });
         ws.send(data);
     }
