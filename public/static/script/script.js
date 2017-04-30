@@ -7,12 +7,14 @@
         'text_logged_on' : '您已成功登录，Steam ID 3为：',
         'text_logon_failed': '登录失败，原因：',
         'text_redeeming' : '激活中，请稍候...',
+        'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'alert_server_disconnected': '已和服务器断开连接！',
     };
 
     let allErrors = {
         'InvalidPassword': '无效的密码',
+        'TwoFactorCodeMismatch': '安全令错误'
     };
 
     let allResults = {
@@ -79,7 +81,7 @@
                     $('#accountInfo').fadeOut();
                     $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
                     
-                    if($('#inputKey').val().trim() != '') {
+                    if( !isBlank( $('#inputKey').val())) {
                         wsRedeem()
                     }
                 } 
@@ -137,6 +139,15 @@
 
     function wsLogon() {
 
+        let username = $('#inputUsername').val();
+        let password = $('#inputPassword').val();
+        let authcode = $('#inputCode').val();
+        
+        if ( isBlank(username) || isBlank(password) || isBlank(authcode) ) {
+            $('.panel-body').text(allTexts['test_input_incorrect']);
+            return;
+        }
+
         $('#buttonRedeem').fadeOut();
         $('.progress').fadeIn();
         $('.panel-body').text(allTexts['text_logging_on']);
@@ -183,6 +194,10 @@
         }
 
         $('tbody').prepend(row);
+    }
+
+    function isBlank(str) {
+        return str.trim() == '';
     }
 
     $('#buttonRedeem').click(function (){
