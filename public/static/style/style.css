@@ -19,6 +19,10 @@ a:active {
     text-decoration: none;
 }
 
+table a {
+    color: lightslategrey;
+}
+
 /* site title */
 .site-title {
     font-size: 2em;
