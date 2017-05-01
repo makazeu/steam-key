@@ -193,7 +193,7 @@
         if (subId == 0) {
             row.append('<td>——</td>');
         } else {
-            row.append(`<td>(${subId}) ${subName}</td>`);
+            row.append(`<td><a href="https://steamdb.info/sub/{${subId}}/" target="_blank">(${subId}) ${subName}</a></td>`);
         }
 
         $('tbody').append(row);
