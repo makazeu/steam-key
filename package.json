@@ -16,6 +16,8 @@
     "ws": "latest",
     "express": "latest",
     "hbs": "latest",
-    "path": "latest"
+    "path": "latest",
+    "request": "latest",
+    "xml2js": "latest"
   }
 }

@@ -14,7 +14,8 @@
 
     let allErrors = {
         'InvalidPassword': '无效的密码',
-        'TwoFactorCodeMismatch': '安全令错误'
+        'TwoFactorCodeMismatch': '安全令错误',
+        'Limited account': '受限用户暂无法使用'
     };
 
     let allResults = {

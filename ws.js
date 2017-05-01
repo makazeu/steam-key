@@ -1,9 +1,10 @@
 const WebSocket = require('ws');
+const dm = require('domain');
+const checker = require('./check');
 
 module.exports = function(server) {
 
     const wss = new WebSocket.Server({ server });
-    const dm = require('domain');
 
     wss.on('connection', function connection(ws) {
 
@@ -42,11 +43,22 @@ module.exports = function(server) {
                 steamClient.once('loggedOn', function(details) {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
-                    trySend(ws, JSON.stringify({
-                        'action': 'logOn',
-                        'result': 'success',
-                        'detail': { 'steamID': steamClient.steamID.getSteam3RenderedID() }
-                    }));
+                    // check if the account is limited
+                    checker(steamClient.steamID.getSteamID64(), result => {
+
+                        console.log(steamClient.steamID.getSteamID64(), result)
+                        if(result != 'OK') {
+                            sendErrorMsg(ws, 'logOn', result);
+                            steamClient.logOff();
+                        } 
+                        else {
+                            trySend(ws, JSON.stringify({
+                                'action': 'logOn',
+                                'result': 'success',
+                                'detail': { 'steamID': steamClient.steamID.getSteam3RenderedID() }
+                            }));
+                        }
+                    });
                 });
             } 
 
@@ -107,3 +119,4 @@ function trySend(ws, stuff) {
         //do nothing
     }
 }
+
