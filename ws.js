@@ -46,7 +46,7 @@ module.exports = function(server) {
                     // check if the account is limited
                     checker(steamClient.steamID.getSteamID64(), result => {
 
-                        console.log(steamClient.steamID.getSteamID64(), result)
+                        //console.log(steamClient.steamID.getSteamID64(), result)
                         if(result != 'OK') {
                             sendErrorMsg(ws, 'logOn', result);
                             steamClient.logOff();
