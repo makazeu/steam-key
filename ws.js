@@ -29,7 +29,7 @@ module.exports = (server) => {
 
                 let domain = dm.create();
                 domain.on('error', (err) => {
-                    sendErrorMsg(ws, 'logOn', err.message)
+                    sendErrorMsg(ws, 'logOn', err.message);
                 });
 
                 domain.run( () => {
@@ -69,7 +69,7 @@ module.exports = (server) => {
 
                 let domain = dm.create();
                 domain.on('error', (err) => {
-                    sendErrorMsg(ws, 'redeem', err.message)
+                    sendErrorMsg(ws, 'redeem', err.message);
                 });
 
                 domain.run( () => {
@@ -107,7 +107,7 @@ function sendErrorMsg(ws, action, message) {
             'result' : 'failed',
             'message':  message
         }));
-    } catch (errore) {
+    } catch (error) {
         //do nothing
     }
 }
