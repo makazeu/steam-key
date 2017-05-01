@@ -59,7 +59,7 @@
         };
 
         ws.onmessage = function (data, flags) {
-            console.log('Received: %s', data.data);
+            //console.log('Received: %s', data.data);
 
             let recvData = JSON.parse(data.data);
 

@@ -8,7 +8,7 @@ module.exports = function(server) {
     wss.on('connection', function connection(ws) {
 
         //const location = url.parse(ws.upgradeReq.url, true);
-        console.log('Connected!');
+        //console.log('Connected!');
 
         trySend(ws, JSON.stringify({
             'action': 'connect',
@@ -20,7 +20,7 @@ module.exports = function(server) {
 
         ws.on('message', function incoming(message) {
 
-            console.log('received: %s', message);
+            //console.log('received: %s', message);
             let data = JSON.parse(message);
             
             // request LogOn
@@ -40,7 +40,7 @@ module.exports = function(server) {
                 });
                 
                 steamClient.once('loggedOn', function(details) {
-                    console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
+                    //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
                     trySend(ws, JSON.stringify({
                         'action': 'logOn',
@@ -53,7 +53,7 @@ module.exports = function(server) {
             // request Redeem
             else if (data.action == 'redeem') {
 
-                console.log('Key: %s', data.key);
+                //console.log('Key: %s', data.key);
 
                 let domain = dm.create();
                 domain.on('error', function (err) {
@@ -72,7 +72,7 @@ module.exports = function(server) {
                         resData['detail']['details'] = allPurchaseResults[details.toString()];
                         resData['detail']['packages'] = packages;
 
-                        console.log(resData);
+                        //console.log(resData);
 
                         trySend(ws, JSON.stringify(resData));
                     });        
@@ -82,7 +82,8 @@ module.exports = function(server) {
         }); // ws.on == message
 
         ws.on('close', function close(){
-            console.log('close!');
+            steamClient.logOff();
+            //console.log('close!');
         });
     });
 }
