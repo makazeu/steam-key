@@ -1,4 +1,7 @@
-(function (){
+( () => {
+
+    "use strict";
+
     let allTexts = {
         'text_panel_tip': '温馨提醒：请确保本网页处于HTTPS连接中，以保证您的账号安全！',
         'text_connecting_server': '正在连接激活服务器...',
