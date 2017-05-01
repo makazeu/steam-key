@@ -183,7 +183,10 @@
         // key
         row.append(`<td>${key}</td>`);
         // result
-        row.append(`<td>${result}</td>`);
+        if(result == '失败')
+            row.append(`<td style="color:red">${result}</td>`);
+        else
+            row.append(`<td style="color:green">${result}</td>`);
         // detail
         row.append(`<td>${detail}</td>`);
         // sub
@@ -193,7 +196,7 @@
             row.append(`<td>(${subId}) ${subName}</td>`);
         }
 
-        $('tbody').prepend(row);
+        $('tbody').append(row);
     }
 
     function isBlank(str) {
