@@ -2,11 +2,11 @@ const WebSocket = require('ws');
 const dm = require('domain');
 const checker = require('./check');
 
-module.exports = function(server) {
+module.exports = (server) => {
 
     const wss = new WebSocket.Server({ server });
 
-    wss.on('connection', function connection(ws) {
+    wss.on('connection', (ws) => {
 
         //const location = url.parse(ws.upgradeReq.url, true);
         //console.log('Connected!');
@@ -19,7 +19,7 @@ module.exports = function(server) {
         let steamUser = require('steam-user');
         let steamClient = new steamUser(ws);
 
-        ws.on('message', function incoming(message) {
+        ws.on('message', (message) => {
 
             //console.log('received: %s', message);
             let data = JSON.parse(message);
@@ -28,11 +28,11 @@ module.exports = function(server) {
             if (data.action == 'logOn') {
 
                 let domain = dm.create();
-                domain.on('error', function (err) {
+                domain.on('error', (err) => {
                     sendErrorMsg(ws, 'logOn', err.message)
                 });
 
-                domain.run(function () {
+                domain.run( () => {
                     steamClient.logOn({
                         'accountName'   : data.username,
                         'password'      : data.password,
@@ -40,7 +40,7 @@ module.exports = function(server) {
                     });
                 });
                 
-                steamClient.once('loggedOn', function(details) {
+                steamClient.once('loggedOn', (details) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
                     // check if the account is limited
@@ -68,14 +68,14 @@ module.exports = function(server) {
                 //console.log('Key: %s', data.key);
 
                 let domain = dm.create();
-                domain.on('error', function (err) {
+                domain.on('error', (err) => {
                     sendErrorMsg(ws, 'redeem', err.message)
                 });
 
-                domain.run( function() {
+                domain.run( () => {
                     let resData = { 'action': 'redeem', 'detail': {} };
 
-                    steamClient.redeemKey(data.key, function(result, details, packages ){
+                    steamClient.redeemKey(data.key, (result, details, packages) => {
 
                         let allResults = require('./Eresult');
                         let allPurchaseResults = require('./EPurchaseResult');
@@ -93,7 +93,7 @@ module.exports = function(server) {
             
         }); // ws.on == message
 
-        ws.on('close', function close(){
+        ws.on('close', () => {
             steamClient.logOff();
             //console.log('close!');
         });

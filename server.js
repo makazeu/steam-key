@@ -11,6 +11,6 @@ let web = require('./web')(app);
 let ws = require('./ws')(server);
 
 
-server.listen(3999, function listening() {
+server.listen(3999, () => {
     console.log('Listening on %d', server.address().port);
 });

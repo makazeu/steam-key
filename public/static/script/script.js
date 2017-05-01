@@ -54,12 +54,12 @@
         let protocol = location.protocol == 'https:' ? 'wss:' : 'ws:';
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
-        ws.onopen = function open() {
+        ws.onopen = () => {
             //console.log('WebSocket opened!');
             //ws.send('hello server!');
         };
 
-        ws.onmessage = function (data, flags) {
+        ws.onmessage = (data, flags) => {
             //console.log('Received: %s', data.data);
 
             let recvData = JSON.parse(data.data);
@@ -83,7 +83,7 @@
                     $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
                     
                     if( !isBlank( $('#inputKey').val())) {
-                        wsRedeem()
+                        wsRedeem();
                     }
                 } 
                 else if (recvData.result == 'failed') {
@@ -130,7 +130,7 @@
             } // recvData.action == logOn
         };
 
-        ws.onclose = function () {
+        ws.onclose = () => {
             $('#panel_status').text(allTexts['text_server_disconnected']);
 
             $('.form-horizontal').fadeOut();
@@ -140,9 +140,9 @@
 
     function wsLogon() {
 
-        let username = $('#inputUsername').val();
-        let password = $('#inputPassword').val();
-        let authcode = $('#inputCode').val();
+        let username = $('#inputUsername').val().trim();
+        let password = $('#inputPassword').val().trim();
+        let authcode = $('#inputCode').val().trim();
         
         if ( isBlank(username) || isBlank(password) || isBlank(authcode) ) {
             $('.panel-body').text(allTexts['test_input_incorrect']);
@@ -204,7 +204,7 @@
         return str.trim() == '';
     }
 
-    $('#buttonRedeem').click(function (){
+    $('#buttonRedeem').click( () => {
         if (loggedOn) {
             wsRedeem();
         } else {
