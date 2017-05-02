@@ -5,8 +5,14 @@ const checker = require('./check');
 module.exports = (server) => {
 
     const wss = new WebSocket.Server({ server });
-
-    let serverDef = require('./servername');
+    
+    let serverDef;
+    try {
+        serverDef = require('./servername');
+    } catch(err) {
+        throw new Error('请编辑servername.sample.json文件改名为servername.json！');
+    }
+    
 
     wss.on('connection', (ws) => {
 
