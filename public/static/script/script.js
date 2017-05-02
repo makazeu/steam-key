@@ -48,6 +48,8 @@
 
     let loggedOn = false;
     let keyCount = 0;
+    let keySuccess = 0;
+    let normalStatus;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
@@ -69,7 +71,7 @@
 
             if (recvData.action == 'connect') {
                 //console.log('WebSocket connected!');
-                $('#panel_status').text(allTexts['text_connected_server']);
+                $('#panel_status').text(allTexts['text_connected_server'] + `(${recvData.server})`);
 
                 $('.form-horizontal').fadeIn();
                 return;
@@ -105,6 +107,7 @@
                 $('#buttonRedeem').fadeIn();
                 $('.progress').fadeOut();
                 $('#inputKey').removeAttr('disabled');
+                $('.panel-body').text(normalStatus);
 
                 keyCount++;
                 
@@ -126,6 +129,11 @@
                                 key,
                                 recvData.detail.packages[key]
                             );
+
+                            if (recvData.detail.result == 'OK' && keySuccess == 0) {
+                                keySuccess = 1;
+                                $('.my-alipay').fadeIn();
+                            }
                         }
                     }
                 } // packages.length != 0
@@ -174,9 +182,10 @@
             action  : 'redeem',
             key     : $('#inputKey').val().trim()
         });
-        ws.send(data);
 
-        $('.progress').fadeOut();
+        normalStatus = $('.panel-body').text();
+        $('.panel-body').text(allTexts['text_redeeming']);
+        ws.send(data);
     }
 
     function tableInsertKey(key, result, detail, subId, subName) {
@@ -185,7 +194,7 @@
         // number
         row.append(`<td>${keyCount}</td>`);
         // key
-        row.append(`<td>${key}</td>`);
+        row.append(`<td><code>${key}</code></td>`);
         // result
         if(result == '失败')
             row.append(`<td style="color:red">${result}</td>`);
@@ -197,7 +206,7 @@
         if (subId == 0) {
             row.append('<td>——</td>');
         } else {
-            row.append(`<td><a href="https://steamdb.info/sub/${subId}/" target="_blank">(${subId}) ${subName}</a></td>`);
+            row.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
         }
 
         $('tbody').append(row);

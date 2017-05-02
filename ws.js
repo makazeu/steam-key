@@ -6,6 +6,12 @@ module.exports = (server) => {
 
     const wss = new WebSocket.Server({ server });
 
+    let serverDef;
+    require('./readfile')('server.json', (data)=>{
+        serverDef = data;
+        //console.log(serverDef);
+    });
+
     wss.on('connection', (ws) => {
 
         //const location = url.parse(ws.upgradeReq.url, true);
@@ -14,6 +20,7 @@ module.exports = (server) => {
         trySend(ws, JSON.stringify({
             'action': 'connect',
             'result': 'success',
+            'server': serverDef ? serverDef.name : 'Unknown',
         }));
 
         let steamUser = require('steam-user');
@@ -34,15 +41,23 @@ module.exports = (server) => {
 
                 domain.run( () => {
                     steamClient.logOn({
-                        'accountName'   : data.username,
-                        'password'      : data.password,
-                        'twoFactorCode' : data.authcode
+                        'accountName'   : data.username.trim(),
+                        'password'      : data.password.trim(),
+                        'twoFactorCode' : data.authcode.trim()
                     });
                 });
                 
                 steamClient.once('loggedOn', (details) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
+                    if (serverDef && serverDef.id.startsWith('cn')) {
+                        trySend(ws, JSON.stringify({
+                                'action': 'logOn',
+                                'result': 'success',
+                                'detail': { 'steamID': steamClient.steamID.getSteam3RenderedID() }
+                        }));
+                        return;
+                    }
                     // check if the account is limited
                     checker(steamClient.steamID.getSteamID64(), result => {
 
@@ -98,7 +113,7 @@ module.exports = (server) => {
             //console.log('close!');
         });
     });
-}
+};
 
 function sendErrorMsg(ws, action, message) {
     try {

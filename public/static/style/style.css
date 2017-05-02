@@ -47,6 +47,13 @@ table a {
     color: grey;
 }
 
+/* alipay */
+.my-alipay {
+    font-size: 0.9em;
+    margin-left: 12px;
+    display: none;
+}
+
 @media screen and (max-width: 480px) {
     .poetry-content {
         font-size: 1.13em;
