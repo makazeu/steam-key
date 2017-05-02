@@ -6,11 +6,7 @@ module.exports = (server) => {
 
     const wss = new WebSocket.Server({ server });
 
-    let serverDef;
-    require('./readfile')('server.json', (data)=>{
-        serverDef = data;
-        //console.log(serverDef);
-    });
+    let serverDef = require('./servername');
 
     wss.on('connection', (ws) => {
 
