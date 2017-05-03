@@ -49,7 +49,6 @@
     let loggedOn = false;
     let keyCount = 0;
     let keySuccess = 0;
-    let normalStatus;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
@@ -65,7 +64,7 @@
         };
 
         ws.onmessage = (data, flags) => {
-            //console.log('Received: %s', data.data);
+            console.log('Received: %s', data.data);
 
             let recvData = JSON.parse(data.data);
 
@@ -107,33 +106,34 @@
                 $('#buttonRedeem').fadeIn();
                 $('.progress').fadeOut();
                 $('#inputKey').removeAttr('disabled');
-                $('.panel-body').text(normalStatus);
 
                 keyCount++;
                 
                 if(Object.keys(recvData.detail.packages).length == 0) {
-                    tableInsertKey(
-                        $('#inputKey').val().trim(),
+                    tableUpdateKey(
+                        recvData.detail.key,
                         allResults[recvData.detail.result] || recvData.detail.result,
                         allPurchaseResults[recvData.detail.details] || recvData.detail.details,
                         0, ''
                     );
                 } // packages.length == 0
                 else {
-                    for (let key in recvData.detail.packages) {
-                        if (recvData.detail.packages.hasOwnProperty(key)) {
-                            tableInsertKey(
-                                $('#inputKey').val().trim(),
+                    for (let subId in recvData.detail.packages) {
+                        if (recvData.detail.packages.hasOwnProperty(subId)) {
+                            tableUpdateKey(
+                                recvData.detail.key,
                                 allResults[recvData.detail.result] || recvData.detail.result,
                                 allPurchaseResults[recvData.detail.details] || recvData.detail.details,
-                                key,
-                                recvData.detail.packages[key]
+                                subId,
+                                recvData.detail.packages[subId]
                             );
 
                             if (recvData.detail.result == 'OK' && keySuccess == 0) {
                                 keySuccess = 1;
                                 $('.my-alipay').fadeIn();
                             }
+
+                            break;
                         }
                     }
                 } // packages.length != 0
@@ -174,46 +174,82 @@
     }
 
     function wsRedeem() {
+
+        let keys = getKeysByRE($('#inputKey').val().trim());
+        if (keys.length <= 0) {return;}
+
         $('#buttonRedeem').fadeOut();
         $('.progress').fadeIn();
         $('#inputKey').attr('disabled', 'disabled');
 
         let data = JSON.stringify({
             action  : 'redeem',
-            key     : $('#inputKey').val().trim()
+            keys    : keys
         });
 
-        normalStatus = $('.panel-body').text();
-        $('.panel-body').text(allTexts['text_redeeming']);
+        console.log(data);
+        keys.forEach( key => tableInsertKey(key) );
+
         ws.send(data);
     }
 
-    function tableInsertKey(key, result, detail, subId, subName) {
+    function tableUpdateKey(key, result, detail, subId, subName) {
+        let rowObjects = $('tr');
+        for (let i=1; i<rowObjects.length; i++) {
+
+            let rowElement = rowObjects[i];
+
+            let rowObject = $(rowElement);
+            if ( rowObject.children()[1].innerHTML.includes(key) ) {
+                rowObject.children()[2].remove();
+
+                // result
+                if (result == '失败')
+                    rowObject.append(`<td class="nobr" style="color:red">${result}</td>`);
+                else
+                    rowObject.append(`<td class="nobr" style="color:green">${result}</td>`);
+                // detail
+                rowObject.append(`<td class="nobr">${detail}</td>`);
+                // sub
+                if (subId == 0) {
+                    rowObject.append('<td class="table-subname">——</td>');
+                } else {
+                    rowObject.append(`<td class="table-subname"><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
+                }
+            }
+        }
+    }
+
+    function tableInsertKey(key) {
+
+        keyCount++;
         let row = $('<tr></tr>');
 
         // number
-        row.append(`<td>${keyCount}</td>`);
-        // key
-        row.append(`<td><code>${key}</code></td>`);
-        // result
-        if(result == '失败')
-            row.append(`<td style="color:red">${result}</td>`);
-        else
-            row.append(`<td style="color:green">${result}</td>`);
-        // detail
-        row.append(`<td>${detail}</td>`);
-        // sub
-        if (subId == 0) {
-            row.append('<td>——</td>');
-        } else {
-            row.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
-        }
+        row.append(`<td class="nobr">${keyCount}</td>`);
+        //key
+        row.append(`<td class="nobr"><code>${key}</code></td>`);
+        //waiting...
+        row.append(`<td colspan="3">激活中，请稍候...</td>`);
 
         $('tbody').append(row);
     }
 
     function isBlank(str) {
         return str.trim() == '';
+    }
+
+    function getKeysByRE (text) {
+        text = text.trim();
+        let reg = new RegExp('([0-9,A-Z]{5}-){2}[0-9,A-Z]{5}', 'g');
+        let keys = [];
+
+        let result;
+        while(result = reg.exec(text)) {
+            keys.push(result[0]);
+        }
+
+        return keys;
     }
 
     $('#buttonRedeem').click( () => {

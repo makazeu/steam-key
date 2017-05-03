@@ -19,8 +19,14 @@ a:active {
     text-decoration: none;
 }
 
+/* table */
 table a {
     color: lightslategrey;
+}
+
+td {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 /* site title */
@@ -36,7 +42,6 @@ table a {
 .my-panel {
     font-size: 1.2em;
 }
-
 
 /* copyright info at bottom */
 .copyright {

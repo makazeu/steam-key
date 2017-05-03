@@ -13,6 +13,8 @@ module.exports = (server) => {
         throw new Error('请编辑servername.sample.json文件改名为servername.json！');
     }
     
+    let allResults = require('./Eresult');
+    let allPurchaseResults = require('./EPurchaseResult');
 
     wss.on('connection', (ws) => {
 
@@ -52,7 +54,7 @@ module.exports = (server) => {
                 steamClient.once('loggedOn', (details) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
-                    if (serverDef && serverDef.id.startsWith('cn')) {
+                    if (serverDef && ( serverDef.id.startsWith('cn') || serverDef.id.startsWith('test') )) {
                         trySend(ws, JSON.stringify({
                                 'action': 'logOn',
                                 'result': 'success',
@@ -90,21 +92,22 @@ module.exports = (server) => {
                 });
 
                 domain.run( () => {
-                    let resData = { 'action': 'redeem', 'detail': {} };
+                    // REDEEMING STARTS
+                    data.keys.forEach( keyElement => {
+                        steamClient.redeemKey( keyElement, (result, details, packages) => {
 
-                    steamClient.redeemKey(data.key, (result, details, packages) => {
+                            let resData = { 'action': 'redeem', 'detail': {} };
+                            resData['detail']['key'] = keyElement;
+                            resData['detail']['result'] = allResults[result.toString()];
+                            resData['detail']['details'] = allPurchaseResults[details.toString()];
+                            resData['detail']['packages'] = packages;
 
-                        let allResults = require('./Eresult');
-                        let allPurchaseResults = require('./EPurchaseResult');
-                        
-                        resData['detail']['result'] = allResults[result.toString()];
-                        resData['detail']['details'] = allPurchaseResults[details.toString()];
-                        resData['detail']['packages'] = packages;
+                            console.log(resData);
 
-                        //console.log(resData);
-
-                        trySend(ws, JSON.stringify(resData));
-                    });        
+                            trySend(ws, JSON.stringify(resData));
+                        } );
+                    } );
+                    // REDEEMING ENDS
                 });
             }  // data.action == redeem
             
