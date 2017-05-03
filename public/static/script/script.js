@@ -31,7 +31,8 @@
         'AlreadyPurchased': '已拥有',
         'DuplicateActivationCode': '重复激活',
         'BadActivationCode': '无效激活码',
-        'RateLimited': '次数上限'
+        'RateLimited': '次数上限',
+        'DoesNotOwnRequiredApp': '缺少主游戏',
     };
 
     if (checkWebSocket()) {
@@ -106,8 +107,6 @@
                 $('#buttonRedeem').fadeIn();
                 $('.progress').fadeOut();
                 $('#inputKey').removeAttr('disabled');
-
-                keyCount++;
                 
                 if(Object.keys(recvData.detail.packages).length == 0) {
                     tableUpdateKey(

@@ -102,7 +102,7 @@ module.exports = (server) => {
                             resData['detail']['details'] = allPurchaseResults[details.toString()];
                             resData['detail']['packages'] = packages;
 
-                            console.log(resData);
+                            //console.log(resData);
 
                             trySend(ws, JSON.stringify(resData));
                         } );
