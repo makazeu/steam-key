@@ -18,6 +18,7 @@
     "hbs": "latest",
     "path": "latest",
     "request": "latest",
-    "xml2js": "latest"
+    "xml2js": "latest",
+    "steam-user": "git+https://github.com/zyfworks/node-steam-user.git"
   }
 }

@@ -10,7 +10,7 @@ module.exports = (server) => {
     try {
         serverDef = require('./servername');
     } catch(err) {
-        throw new Error('请编辑servername.sample.json文件改名为servername.json！');
+        throw new Error('请编辑servername.example.json文件改名为servername.json！');
     }
     
     let allResults = require('./Eresult');
