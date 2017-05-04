@@ -65,7 +65,7 @@
         };
 
         ws.onmessage = (data, flags) => {
-            console.log('Received: %s', data.data);
+            //console.log('Received: %s', data.data);
 
             let recvData = JSON.parse(data.data);
 
@@ -199,7 +199,8 @@
             let rowElement = rowObjects[i];
 
             let rowObject = $(rowElement);
-            if ( rowObject.children()[1].innerHTML.includes(key) ) {
+            if ( rowObject.children()[1].innerHTML.includes(key) && 
+                    rowObject.children()[2].innerHTML.includes('激活中') ) {
                 rowObject.children()[2].remove();
 
                 // result
