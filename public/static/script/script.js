@@ -18,7 +18,7 @@
     let allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
-        'Limited account': '受限用户暂无法使用'
+        'Limited account': '受限用户暂无法使用',
     };
 
     let allResults = {
@@ -33,6 +33,7 @@
         'BadActivationCode': '无效激活码',
         'RateLimited': '次数上限',
         'DoesNotOwnRequiredApp': '缺少主游戏',
+        'RestrictedCountry': '区域限制',
     };
 
     if (checkWebSocket()) {
