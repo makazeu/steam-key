@@ -108,7 +108,7 @@ module.exports = (server) => {
                             trySend(ws, JSON.stringify(resData));
 
                             // send sub info to ActiveMQ
-                            if( serverConfig && serverConfig.log_enabled ) {
+                            if( result==1 && serverConfig && serverConfig.log_enabled ) {
                                 for (let subId in packages) {
                                     if (packages.hasOwnProperty(subId)) {
                                         activemq(serverConfig.activemq_host, 
@@ -116,7 +116,8 @@ module.exports = (server) => {
                                             JSON.stringify(
                                                 {
                                                     subId: parseInt(subId),
-                                                    subName: packages[subId]
+                                                    subName: packages[subId],
+                                                    server: serverConfig.name
                                                 }));
                                         break;
                                     }

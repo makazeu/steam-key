@@ -1,4 +1,7 @@
 {
     "id":   "test",
-    "name": "本地测试"
+    "name": "本地测试",
+    "log_enabled": false,
+    "activemq_host": "your_activemq_server",
+    "activemq_port": 61613
 }
