@@ -1,16 +1,17 @@
 const WebSocket = require('ws');
 const dm = require('domain');
 const checker = require('./check');
+const activemq = require('./activemq');
 
 module.exports = (server) => {
 
     const wss = new WebSocket.Server({ server });
     
-    let serverDef;
+    let serverConfig;
     try {
-        serverDef = require('./servername');
+        serverConfig = require('./serverconfig');
     } catch(err) {
-        throw new Error('请编辑servername.example.json文件改名为servername.json！');
+        throw new Error('请编辑serverconfig.example.json文件改名为serverconfig.json！');
     }
     
     let allResults = require('./Eresult');
@@ -24,7 +25,7 @@ module.exports = (server) => {
         trySend(ws, JSON.stringify({
             'action': 'connect',
             'result': 'success',
-            'server': serverDef ? serverDef.name : 'Unknown',
+            'server': serverConfig ? serverConfig.name : 'Unknown',
         }));
 
         let steamUser = require('steam-user');
@@ -54,7 +55,7 @@ module.exports = (server) => {
                 steamClient.once('loggedOn', (details) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
-                    if (serverDef && ( serverDef.id.startsWith('cn') || serverDef.id.startsWith('test') )) {
+                    if (serverConfig && ( serverConfig.id.startsWith('cn') || serverConfig.id.startsWith('test') )) {
                         trySend(ws, JSON.stringify({
                                 'action': 'logOn',
                                 'result': 'success',
@@ -105,6 +106,25 @@ module.exports = (server) => {
                             //console.log(resData);
 
                             trySend(ws, JSON.stringify(resData));
+
+                            // send sub info to ActiveMQ
+                            if( serverConfig && serverConfig.log_enabled ) {
+                                for (let subId in packages) {
+                                    if (packages.hasOwnProperty(subId)) {
+                                        activemq(serverConfig.activemq_host, 
+                                            serverConfig.activemq_port, 
+                                            JSON.stringify(
+                                                {
+                                                    subId: parseInt(subId),
+                                                    subName: packages[subId]
+                                                }));
+                                        break;
+                                    }
+                                }
+
+                                
+                            }
+
                         } );
                     } );
                     // REDEEMING ENDS
