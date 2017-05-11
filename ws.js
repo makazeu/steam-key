@@ -117,7 +117,7 @@ module.exports = (server) => {
                                                 {
                                                     subId: parseInt(subId),
                                                     subName: packages[subId],
-                                                    server: serverConfig.name
+                                                    server: serverConfig.id
                                                 }));
                                         break;
                                     }
