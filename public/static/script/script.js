@@ -13,6 +13,7 @@
         'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'alert_server_disconnected': '已和服务器断开连接！',
+        'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
     };
 
     let allErrors = {
@@ -99,6 +100,14 @@
                 }
             } // recvData.action == logOn
 
+            else if (recvData.action == 'authCode') {
+                let authCode = prompt(allTexts['prompt_input_authcode']);
+                ws.send(JSON.stringify({
+                    action: 'authCode',
+                    authCode: authCode
+                }));
+            } // recvData.action == authCode
+
             else if (recvData.action == 'redeem') {
                 
                 if( $('table').is(':hidden') ) {
@@ -155,7 +164,7 @@
         let password = $('#inputPassword').val().trim();
         let authcode = $('#inputCode').val().trim();
         
-        if ( isBlank(username) || isBlank(password) || isBlank(authcode) ) {
+        if ( isBlank(username) || isBlank(password) ) {
             $('.panel-body').text(allTexts['test_input_incorrect']);
             return;
         }
@@ -213,9 +222,9 @@
                 rowObject.append(`<td class="nobr">${detail}</td>`);
                 // sub
                 if (subId == 0) {
-                    rowObject.append('<td class="table-subname">——</td>');
+                    rowObject.append('<td>——</td>');
                 } else {
-                    rowObject.append(`<td class="table-subname"><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
+                    rowObject.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
                 }
             }
         }

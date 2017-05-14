@@ -82,6 +82,18 @@ module.exports = (server) => {
                 });
             } 
 
+            // request AuthCode
+            else if (data.action == 'authCode') {
+                let domain = dm.create();
+                domain.on('error', (err) => {
+                    sendErrorMsg(ws, 'logOn', err.message);
+                });
+
+                domain.run( () => {
+                    steamClient.emit('inputAuthCode', data.authCode);
+                });
+            }
+
             // request Redeem
             else if (data.action == 'redeem') {
 
