@@ -3,7 +3,7 @@ const hbs = require('hbs');
 const url = require('url');
 const path = require('path');
 
-module.exports = function(app) {
+module.exports = app => {
 
     // template engine
     app.set('view engine', 'hbs');
@@ -12,7 +12,7 @@ module.exports = function(app) {
     app.use(express.static(path.join(__dirname, 'public')));
 
     // routes
-    app.get('/', function(req, res) {
+    app.get('/', (req, res) => {
         res.render('index');
     });
-}
+};
