@@ -2,6 +2,5 @@
     "id":   "test",
     "name": "本地测试",
     "log_enabled": false,
-    "activemq_host": "your_activemq_server",
-    "activemq_port": 61613
+    "post_address": "your post address"
 }

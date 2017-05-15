@@ -1,11 +1,9 @@
 const WebSocket = require('ws');
 const dm = require('domain');
 const checker = require('./check');
-const activemq = require('./activemq');
+const poster = require('./post');
 
 module.exports = (server) => {
-
-    const wss = new WebSocket.Server({ server });
     
     let serverConfig;
     try {
@@ -13,6 +11,8 @@ module.exports = (server) => {
     } catch(err) {
         throw new Error('请编辑serverconfig.example.json文件改名为serverconfig.json！');
     }
+
+    const wss = new WebSocket.Server({ server });
     
     let allResults = require('./Eresult');
     let allPurchaseResults = require('./EPurchaseResult');
@@ -119,23 +119,17 @@ module.exports = (server) => {
 
                             trySend(ws, JSON.stringify(resData));
 
-                            // send sub info to ActiveMQ
+                            // send sub info via post
                             if( result==1 && serverConfig && serverConfig.log_enabled ) {
                                 for (let subId in packages) {
                                     if (packages.hasOwnProperty(subId)) {
-                                        activemq(serverConfig.activemq_host, 
-                                            serverConfig.activemq_port, 
-                                            JSON.stringify(
-                                                {
-                                                    subId: parseInt(subId),
-                                                    subName: packages[subId],
-                                                    server: serverConfig.id
-                                                }));
+                                        poster(serverConfig.post_address, 
+                                            parseInt(subId),
+                                            packages[subId],
+                                            serverConfig.id);
                                         break;
                                     }
                                 }
-
-                                
                             }
 
                         } );
