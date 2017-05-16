@@ -20,6 +20,7 @@
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
+        'AuthCodeError': '验证码有误',
     };
 
     let allResults = {
@@ -101,7 +102,7 @@
             } // recvData.action == logOn
 
             else if (recvData.action == 'authCode') {
-                let authCode = prompt(allTexts['prompt_input_authcode']);
+                let authCode = prompt(allTexts['prompt_input_authcode']).trim();
                 ws.send(JSON.stringify({
                     action: 'authCode',
                     authCode: authCode
