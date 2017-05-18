@@ -43,6 +43,18 @@ td {
     font-size: 1.2em;
 }
 
+.my-ad {
+    text-align: center;
+}
+
+.my-ad a {
+    color: lightslategrey;
+}
+
+.my-ad a:hover {
+    color: blueviolet;
+}
+
 /* copyright info at bottom */
 .copyright {
     color: #D8BFD8;
