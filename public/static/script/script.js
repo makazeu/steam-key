@@ -102,10 +102,17 @@
             } // recvData.action == logOn
 
             else if (recvData.action == 'authCode') {
-                let authCode = prompt(allTexts['prompt_input_authcode']).trim();
+                let authCode = prompt(allTexts['prompt_input_authcode']);
+                
+                if (authCode === null || authCode.trim() === '') {
+                    $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
+                    ws.close();
+                    return;
+                }
+
                 ws.send(JSON.stringify({
                     action: 'authCode',
-                    authCode: authCode
+                    authCode: authCode.trim()
                 }));
             } // recvData.action == authCode
 
