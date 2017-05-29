@@ -234,6 +234,7 @@
                 } else {
                     rowObject.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
                 }
+                break;
             }
         }
     }
