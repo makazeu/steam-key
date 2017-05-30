@@ -70,7 +70,13 @@
         ws.onmessage = (data, flags) => {
             //console.log('Received: %s', data.data);
 
-            let recvData = JSON.parse(data.data);
+            let recvData;
+            try{
+                recvData = JSON.parse(data.data);
+            } catch (err) {
+                return;
+            }
+             
 
             if (recvData.action == 'connect') {
                 //console.log('WebSocket connected!');

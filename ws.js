@@ -31,10 +31,15 @@ module.exports = (server) => {
         let steamUser = require('steam-user');
         let steamClient = new steamUser(ws);
 
-        ws.on('message', (message) => {
+        ws.on('message', message => {
 
             //console.log('received: %s', message);
-            let data = JSON.parse(message);
+            let data;
+            try {
+                data = JSON.parse(message);
+            } catch (err) {
+                return;
+            }
             
             // request LogOn
             if (data.action == 'logOn') {
