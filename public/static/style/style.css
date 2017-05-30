@@ -1,6 +1,7 @@
 body,
 input,
-button {
+button,
+code {
     font-family:  "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei" !important;
     font-weight: 500;
     /*text-shadow: silver 0px 0px 1px !important;*/
