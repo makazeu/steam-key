@@ -1,41 +1,43 @@
-( () => {
+'use strict';
+
+(function () {
 
     "use strict";
 
-    let allTexts = {
+    var allTexts = {
         'text_panel_tip': '温馨提醒：请确保本网页处于HTTPS连接中，以保证您的账号安全！',
         'text_connecting_server': '正在连接激活服务器...',
-        'text_connected_server' : '已连接到服务器',
+        'text_connected_server': '已连接到服务器',
         'text_logging_on': '登录中，请稍候...',
-        'text_logged_on' : '您已成功登录，Steam ID 3为：',
+        'text_logged_on': '您已成功登录，Steam ID 3为：',
         'text_logon_failed': '登录失败，原因：',
-        'text_redeeming' : '激活中，请稍候...',
+        'text_redeeming': '激活中，请稍候...',
         'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'alert_server_disconnected': '已和服务器断开连接！',
-        'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
+        'prompt_input_authcode': '请输入手机令牌或邮箱验证码'
     };
 
-    let allErrors = {
+    var allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
-        'AuthCodeError': '验证码有误',
+        'AuthCodeError': '验证码有误'
     };
 
-    let allResults = {
-        'OK'    : '成功',
-        'Fail'  : '失败',
+    var allResults = {
+        'OK': '成功',
+        'Fail': '失败'
     };
 
-    let allPurchaseResults = {
+    var allPurchaseResults = {
         'NoDetail': '——',
         'AlreadyPurchased': '已拥有',
         'DuplicateActivationCode': '重复激活',
         'BadActivationCode': '无效激活码',
         'RateLimited': '次数上限',
         'DoesNotOwnRequiredApp': '缺少主游戏',
-        'RestrictedCountry': '区域限制',
+        'RestrictedCountry': '区域限制'
     };
 
     if (checkWebSocket()) {
@@ -47,40 +49,39 @@
     $('#panel_status').text(allTexts['text_connecting_server']);
     $('.panel-body').text(allTexts['text_panel_tip']);
 
-    let ws;
+    var ws = void 0;
     doWebSocket();
 
-    let loggedOn = false;
-    let keyCount = 0;
-    let keySuccess = 0;
+    var loggedOn = false;
+    var keyCount = 0;
+    var keySuccess = 0;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
     }
 
     function doWebSocket() {
-        let protocol = location.protocol == 'https:' ? 'wss:' : 'ws:';
-        ws = new WebSocket(`${protocol}//${location.host}/ws`);
+        var protocol = location.protocol == 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(protocol + '//' + location.host + '/ws');
 
-        ws.onopen = () => {
+        ws.onopen = function () {
             //console.log('WebSocket opened!');
             //ws.send('hello server!');
         };
 
-        ws.onmessage = (data, flags) => {
+        ws.onmessage = function (data, flags) {
             //console.log('Received: %s', data.data);
 
-            let recvData;
-            try{
+            var recvData = void 0;
+            try {
                 recvData = JSON.parse(data.data);
             } catch (err) {
                 return;
             }
-             
 
             if (recvData.action == 'connect') {
                 //console.log('WebSocket connected!');
-                $('#panel_status').text(allTexts['text_connected_server'] + `(${recvData.server})`);
+                $('#panel_status').text(allTexts['text_connected_server'] + ('(' + recvData.server + ')'));
 
                 $('.form-horizontal').fadeIn();
                 return;
@@ -95,76 +96,63 @@
                     loggedOn = true;
                     $('#accountInfo').fadeOut();
                     $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
-                    
-                    if( !isBlank( $('#inputKey').val())) {
+
+                    if (!isBlank($('#inputKey').val())) {
                         wsRedeem();
                     }
-                } 
-                else if (recvData.result == 'failed') {
-                    let errMsg = allErrors[recvData.message] || recvData.message;
+                } else if (recvData.result == 'failed') {
+                    var errMsg = allErrors[recvData.message] || recvData.message;
                     $('.panel-body').text(allTexts['text_logon_failed'] + errMsg);
                     ws.close();
                 }
             } // recvData.action == logOn
 
             else if (recvData.action == 'authCode') {
-                let authCode = prompt(allTexts['prompt_input_authcode']);
-                
-                if (authCode === null || authCode.trim() === '') {
-                    $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
-                    ws.close();
-                    return;
-                }
+                    var authCode = prompt(allTexts['prompt_input_authcode']);
 
-                ws.send(JSON.stringify({
-                    action: 'authCode',
-                    authCode: authCode.trim()
-                }));
-            } // recvData.action == authCode
-
-            else if (recvData.action == 'redeem') {
-                
-                if( $('table').is(':hidden') ) {
-                    $('table').fadeIn();
-                }
-
-                $('#buttonRedeem').fadeIn();
-                $('.progress').fadeOut();
-                $('#inputKey').removeAttr('disabled');
-                
-                if(Object.keys(recvData.detail.packages).length == 0) {
-                    tableUpdateKey(
-                        recvData.detail.key,
-                        allResults[recvData.detail.result] || recvData.detail.result,
-                        allPurchaseResults[recvData.detail.details] || recvData.detail.details,
-                        0, ''
-                    );
-                } // packages.length == 0
-                else {
-                    for (let subId in recvData.detail.packages) {
-                        if (recvData.detail.packages.hasOwnProperty(subId)) {
-                            tableUpdateKey(
-                                recvData.detail.key,
-                                allResults[recvData.detail.result] || recvData.detail.result,
-                                allPurchaseResults[recvData.detail.details] || recvData.detail.details,
-                                subId,
-                                recvData.detail.packages[subId]
-                            );
-
-                            if (recvData.detail.result == 'OK' && keySuccess == 0) {
-                                keySuccess = 1;
-                                $('.my-alipay').fadeIn();
-                            }
-
-                            break;
-                        }
+                    if (authCode === null || authCode.trim() === '') {
+                        $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
+                        ws.close();
+                        return;
                     }
-                } // packages.length != 0
-                
-            } // recvData.action == logOn
+
+                    ws.send(JSON.stringify({
+                        action: 'authCode',
+                        authCode: authCode.trim()
+                    }));
+                } // recvData.action == authCode
+
+                else if (recvData.action == 'redeem') {
+
+                        if ($('table').is(':hidden')) {
+                            $('table').fadeIn();
+                        }
+
+                        $('#buttonRedeem').fadeIn();
+                        $('.progress').fadeOut();
+                        $('#inputKey').removeAttr('disabled');
+
+                        if (Object.keys(recvData.detail.packages).length == 0) {
+                            tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, 0, '');
+                        } // packages.length == 0
+                        else {
+                                for (var subId in recvData.detail.packages) {
+                                    if (recvData.detail.packages.hasOwnProperty(subId)) {
+                                        tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, subId, recvData.detail.packages[subId]);
+
+                                        if (recvData.detail.result == 'OK' && keySuccess == 0) {
+                                            keySuccess = 1;
+                                            $('.my-alipay').fadeIn();
+                                        }
+
+                                        break;
+                                    }
+                                }
+                            } // packages.length != 0
+                    } // recvData.action == logOn
         };
 
-        ws.onclose = () => {
+        ws.onclose = function () {
             $('#panel_status').text(allTexts['text_server_disconnected']);
 
             $('.form-horizontal').fadeOut();
@@ -174,11 +162,11 @@
 
     function wsLogon() {
 
-        let username = $('#inputUsername').val().trim();
-        let password = $('#inputPassword').val().trim();
-        let authcode = $('#inputCode').val().trim();
-        
-        if ( isBlank(username) || isBlank(password) ) {
+        var username = $('#inputUsername').val().trim();
+        var password = $('#inputPassword').val().trim();
+        var authcode = $('#inputCode').val().trim();
+
+        if (isBlank(username) || isBlank(password)) {
             $('.panel-body').text(allTexts['test_input_incorrect']);
             return;
         }
@@ -187,58 +175,58 @@
         $('.progress').fadeIn();
         $('.panel-body').text(allTexts['text_logging_on']);
 
-        let data = JSON.stringify({
-            action   : 'logOn',
-            username : username,
-            password : password,
-            authcode : authcode
+        var data = JSON.stringify({
+            action: 'logOn',
+            username: username,
+            password: password,
+            authcode: authcode
         });
         ws.send(data);
     }
 
     function wsRedeem() {
 
-        let keys = getKeysByRE($('#inputKey').val().trim());
-        if (keys.length <= 0) {return;}
+        var keys = getKeysByRE($('#inputKey').val().trim());
+        if (keys.length <= 0) {
+            return;
+        }
 
         $('#buttonRedeem').fadeOut();
         $('.progress').fadeIn();
         $('#inputKey').attr('disabled', 'disabled');
 
-        let data = JSON.stringify({
-            action  : 'redeem',
-            keys    : keys
+        var data = JSON.stringify({
+            action: 'redeem',
+            keys: keys
         });
 
         console.log(data);
-        keys.forEach( key => tableInsertKey(key) );
+        keys.forEach(function (key) {
+            return tableInsertKey(key);
+        });
 
         ws.send(data);
     }
 
     function tableUpdateKey(key, result, detail, subId, subName) {
-        let rowObjects = $('tr');
-        for (let i=1; i<rowObjects.length; i++) {
+        var rowObjects = $('tr');
+        for (var i = 1; i < rowObjects.length; i++) {
 
-            let rowElement = rowObjects[i];
+            var rowElement = rowObjects[i];
 
-            let rowObject = $(rowElement);
-            if ( rowObject.children()[1].innerHTML.includes(key) && 
-                    rowObject.children()[2].innerHTML.includes('激活中') ) {
+            var rowObject = $(rowElement);
+            if (rowObject.children()[1].innerHTML.includes(key) && rowObject.children()[2].innerHTML.includes('激活中')) {
                 rowObject.children()[2].remove();
 
                 // result
-                if (result == '失败')
-                    rowObject.append(`<td class="nobr" style="color:red">${result}</td>`);
-                else
-                    rowObject.append(`<td class="nobr" style="color:green">${result}</td>`);
+                if (result == '失败') rowObject.append('<td class="nobr" style="color:red">' + result + '</td>');else rowObject.append('<td class="nobr" style="color:green">' + result + '</td>');
                 // detail
-                rowObject.append(`<td class="nobr">${detail}</td>`);
+                rowObject.append('<td class="nobr">' + detail + '</td>');
                 // sub
                 if (subId == 0) {
                     rowObject.append('<td>——</td>');
                 } else {
-                    rowObject.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
+                    rowObject.append('<td><code>' + subId + '</code> <a href="https://steamdb.info/sub/' + subId + '/" target="_blank">' + subName + '</a></td>');
                 }
                 break;
             }
@@ -248,14 +236,14 @@
     function tableInsertKey(key) {
 
         keyCount++;
-        let row = $('<tr></tr>');
+        var row = $('<tr></tr>');
 
         // number
-        row.append(`<td class="nobr">${keyCount}</td>`);
+        row.append('<td class="nobr">' + keyCount + '</td>');
         //key
-        row.append(`<td class="nobr"><code>${key}</code></td>`);
+        row.append('<td class="nobr"><code>' + key + '</code></td>');
         //waiting...
-        row.append(`<td colspan="3">激活中，请稍候...</td>`);
+        row.append('<td colspan="3">\u6FC0\u6D3B\u4E2D\uFF0C\u8BF7\u7A0D\u5019...</td>');
 
         $('tbody').append(row);
     }
@@ -264,25 +252,24 @@
         return str.trim() == '';
     }
 
-    function getKeysByRE (text) {
+    function getKeysByRE(text) {
         text = text.trim();
-        let reg = new RegExp('([0-9,A-Z]{5}-){2}[0-9,A-Z]{5}', 'g');
-        let keys = [];
+        var reg = new RegExp('([0-9,A-Z]{5}-){2}[0-9,A-Z]{5}', 'g');
+        var keys = [];
 
-        let result;
-        while(result = reg.exec(text)) {
+        var result = void 0;
+        while (result = reg.exec(text)) {
             keys.push(result[0]);
         }
 
         return keys;
     }
 
-    $('#buttonRedeem').click( () => {
+    $('#buttonRedeem').click(function () {
         if (loggedOn) {
             wsRedeem();
         } else {
             wsLogon();
         }
     });
-    
 })();
