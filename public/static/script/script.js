@@ -15,19 +15,20 @@
         'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'alert_server_disconnected': '已和服务器断开连接！',
-        'prompt_input_authcode': '请输入手机令牌或邮箱验证码'
+        'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
     };
 
     var allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
-        'AuthCodeError': '验证码有误'
+        'AuthCodeError': '验证码有误',
+        'InvalidLoginAuthCode': '验证码无效',
     };
 
     var allResults = {
         'OK': '成功',
-        'Fail': '失败'
+        'Fail': '失败',
     };
 
     var allPurchaseResults = {
@@ -37,7 +38,7 @@
         'BadActivationCode': '无效激活码',
         'RateLimited': '次数上限',
         'DoesNotOwnRequiredApp': '缺少主游戏',
-        'RestrictedCountry': '区域限制'
+        'RestrictedCountry': '区域限制',
     };
 
     if (checkWebSocket()) {
