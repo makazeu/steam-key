@@ -12,9 +12,16 @@ async function start(url) {
         let xmlData = await getXml(url);
         let result = await parseXml(xmlData);
 
+        if(!result || !result['profile']
+            || !result['profile']['isLimitedAccount'] ) {
+                console.log('Unable to check! Url: ' + url);
+                // FIXME
+                return 'OK';
+            }
+
         if(result['profile']['isLimitedAccount'][0] == '0') {
             return 'OK';
-        } {
+        } else {
             throw new Error('Limited account');
         }
 
