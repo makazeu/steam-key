@@ -255,7 +255,7 @@
 
     function getKeysByRE(text) {
         text = text.trim();
-        var reg = new RegExp('([0-9,A-Z]{5}-){2}[0-9,A-Z]{5}', 'g');
+        var reg = new RegExp('([0-9,A-Z]{5}-){2,4}[0-9,A-Z]{5}', 'g');
         var keys = [];
 
         var result = void 0;

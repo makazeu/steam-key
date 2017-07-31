@@ -60,7 +60,8 @@ module.exports = (server) => {
                 steamClient.once('loggedOn', (details) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
-                    if (serverConfig && ( serverConfig.id.startsWith('cn') || serverConfig.id.startsWith('test') )) {
+                    //if (serverConfig && ( serverConfig.id.startsWith('cn') || serverConfig.id.startsWith('test') )) {
+                    if (true) {
                         trySend(ws, JSON.stringify({
                                 'action': 'logOn',
                                 'result': 'success',
