@@ -4,6 +4,14 @@ const url = require('url');
 const path = require('path');
 
 module.exports = app => {
+    // read config file
+    let sponsor = '';
+    try {
+        serverConfig = require('./serverconfig');
+        sponsor = serverConfig['sponsor'];
+    } catch(err) {
+        sponsor = null;
+    }
 
     // template engine
     app.set('view engine', 'hbs');
@@ -13,6 +21,6 @@ module.exports = app => {
 
     // routes
     app.get('/', (req, res) => {
-        res.render('index');
+        res.render('index', {sponsor : sponsor});
     });
 };

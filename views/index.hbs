@@ -107,7 +107,14 @@
         </from> 
 
         <footer class="footer copyright">
-            <p>&copy; 2017 Makazeu <span class="glyphicon glyphicon-heart"></span></p>
+            <p>
+                Code by &copy; 2017 <span class="glyphicon glyphicon-heart"></span> Makazeu
+
+                {{#if sponsor}}
+                    &nbsp; // &nbsp;
+                    <span style="margin:auto">Server by {{sponsor}}</span>
+                {{/if}}
+            </p>
         </footer>
     </div> <!-- /container -->
 
