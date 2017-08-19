@@ -5,12 +5,13 @@ const path = require('path');
 
 module.exports = app => {
     // read config file
-    let sponsor = '';
+    let serverBy = null;
     try {
         serverConfig = require('./serverconfig');
-        sponsor = serverConfig['sponsor'];
+        serverBy = serverConfig['serverBy'];
+        if (serverBy.trim() === '') serverBy = null;
     } catch(err) {
-        sponsor = null;
+        serverBy = null;
     }
 
     // template engine
@@ -21,6 +22,6 @@ module.exports = app => {
 
     // routes
     app.get('/', (req, res) => {
-        res.render('index', {sponsor : sponsor});
+        res.render('index', {serverBy : serverBy});
     });
 };
