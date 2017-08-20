@@ -31,21 +31,6 @@
 
             <div class="panel-body"></div>
 
-            <!--
-            <div class="my-ad">
-                <a href="http://www.vultr.com/?ref=6969850" target="_blank">最好用的魔法服务器 每月仅需2.5美元</a>
-                ||
-                <a href="https://virmach.com/manage/aff.php?aff=1203&pid=119" target="_blank">最便宜的魔法服务器 一年6美元</a>
-            </div>
-            -->
-            
-            <div class="my-alipay" id="alipay" style="display:none">
-                哟~成功激活了一个Key诶，真不错！ 请问...您愿意打赏作者一点点小费吗？
-                <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">
-                    我愿意！<span class="glyphicon glyphicon-heart"></span>
-                </button> &nbsp;
-                <button type="button" class="btn btn-default btn-sm" onclick=$('.my-alipay').html('(｡•́︿•̀｡)')>丑拒</button>
-            </div>
             <!-- Table -->
             <div class="table-responsive table-condensed">
                 <table class="table table-hover" style="display: none">
@@ -108,39 +93,11 @@
 
         <footer class="footer copyright">
             <p>
-                Code by &copy; 2017 <span class="glyphicon glyphicon-heart"></span> Makazeu
-
-                {{#if serverBy}}
-                    &nbsp; // &nbsp;
-                    <span style="margin:auto">Server by {{serverBy}}</span>
-                {{/if}}
+                <a href="https://steamcn.com/" target="_blank">SteamCN 蒸汽动力</a> ( 冀ICP备05004600号 )
             </p>
         </footer>
     </div> <!-- /container -->
 
-    <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">厚颜无耻地递上支付宝二维码 (*/ω＼*)</h4>
-                </div>
-
-                <div class="modal-body">
-                    <h5>租用服务器需要资金... 你懂的... 谢谢！爱你哟~ 
-                        比心<span class="glyphicon glyphicon-heart"></span>~~
-                    </h5>
-                    <div style="text-align:center">
-                        <img src="/static/image/alipay.jpg"  alt="alipay" />
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div> <!-- /.modal-content -->
-        </div> <!-- /.modal-dialog -->
-    </div> <!-- /.modal -->
 
     <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

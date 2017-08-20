@@ -65,6 +65,14 @@ td {
     color: grey;
 }
 
+.copyright a{
+    color: #D8BFD8;
+}
+
+.copyright a:hover {
+    color: lightblue;
+}
+
 /* alipay */
 .my-alipay {
     font-size: 0.9em;

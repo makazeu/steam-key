@@ -141,10 +141,12 @@
                                     if (recvData.detail.packages.hasOwnProperty(subId)) {
                                         tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, subId, recvData.detail.packages[subId]);
 
+                                        /*
                                         if (recvData.detail.result == 'OK' && keySuccess == 0) {
                                             keySuccess = 1;
                                             $('.my-alipay').fadeIn();
                                         }
+                                        */
 
                                         break;
                                     }

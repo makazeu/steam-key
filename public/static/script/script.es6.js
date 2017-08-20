@@ -151,10 +151,12 @@
                                 recvData.detail.packages[subId]
                             );
 
+                            /*
                             if (recvData.detail.result == 'OK' && keySuccess == 0) {
                                 keySuccess = 1;
                                 $('.my-alipay').fadeIn();
                             }
+                            */
 
                             break;
                         }
