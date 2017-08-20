@@ -265,7 +265,7 @@
     }
 
     function getKeysByRE (text) {
-        text = text.trim();
+        text = text.trim().toUpperCase();
         let reg = new RegExp('([0-9,A-Z]{5}-){2,4}[0-9,A-Z]{5}', 'g');
         let keys = [];
 

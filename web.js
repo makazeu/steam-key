@@ -4,6 +4,15 @@ const url = require('url');
 const path = require('path');
 
 module.exports = app => {
+    // read config file
+    let serverBy = null;
+    try {
+        serverConfig = require('./serverconfig');
+        serverBy = serverConfig['serverBy'];
+        if (serverBy.trim() === '') serverBy = null;
+    } catch(err) {
+        serverBy = null;
+    }
 
     // template engine
     app.set('view engine', 'hbs');
@@ -13,6 +22,6 @@ module.exports = app => {
 
     // routes
     app.get('/', (req, res) => {
-        res.render('index');
+        res.render('index', {serverBy : serverBy});
     });
 };
