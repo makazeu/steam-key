@@ -15,20 +15,19 @@
         'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'alert_server_disconnected': '已和服务器断开连接！',
-        'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
+        'prompt_input_authcode': '请输入手机令牌或邮箱验证码'
     };
 
     var allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
-        'AuthCodeError': '验证码有误',
-        'InvalidLoginAuthCode': '验证码无效',
+        'AuthCodeError': '验证码有误'
     };
 
     var allResults = {
         'OK': '成功',
-        'Fail': '失败',
+        'Fail': '失败'
     };
 
     var allPurchaseResults = {
@@ -38,7 +37,7 @@
         'BadActivationCode': '无效激活码',
         'RateLimited': '次数上限',
         'DoesNotOwnRequiredApp': '缺少主游戏',
-        'RestrictedCountry': '区域限制',
+        'RestrictedCountry': '区域限制'
     };
 
     if (checkWebSocket()) {
@@ -56,6 +55,10 @@
     var loggedOn = false;
     var keyCount = 0;
     var keySuccess = 0;
+
+    var autoDivideNum = 9;
+    var waitSeconds = 20;
+    var timer = void 0;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
@@ -109,37 +112,37 @@
             } // recvData.action == logOn
 
             else if (recvData.action == 'authCode') {
-                    var authCode = prompt(allTexts['prompt_input_authcode']);
+                var authCode = prompt(allTexts['prompt_input_authcode']);
 
-                    if (authCode === null || authCode.trim() === '') {
-                        $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
-                        ws.close();
-                        return;
-                    }
+                if (authCode === null || authCode.trim() === '') {
+                    $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
+                    ws.close();
+                    return;
+                }
 
-                    ws.send(JSON.stringify({
-                        action: 'authCode',
-                        authCode: authCode.trim()
-                    }));
-                } // recvData.action == authCode
+                ws.send(JSON.stringify({
+                    action: 'authCode',
+                    authCode: authCode.trim()
+                }));
+            } // recvData.action == authCode
 
-                else if (recvData.action == 'redeem') {
+            else if (recvData.action == 'redeem') {
 
-                        if ($('table').is(':hidden')) {
-                            $('table').fadeIn();
-                        }
+                if ($('table').is(':hidden')) {
+                    $('table').fadeIn();
+                }
 
-                        $('#buttonRedeem').fadeIn();
-                        $('.progress').fadeOut();
-                        $('#inputKey').removeAttr('disabled');
+                $('#buttonRedeem').fadeIn();
+                $('.progress').fadeOut();
+                $('#inputKey').removeAttr('disabled');
 
-                        if (Object.keys(recvData.detail.packages).length == 0) {
-                            tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, 0, '');
-                        } // packages.length == 0
-                        else {
-                                for (var subId in recvData.detail.packages) {
-                                    if (recvData.detail.packages.hasOwnProperty(subId)) {
-                                        tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, subId, recvData.detail.packages[subId]);
+                if (Object.keys(recvData.detail.packages).length == 0) {
+                    tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, 0, '');
+                } // packages.length == 0
+                else {
+                    for (var subId in recvData.detail.packages) {
+                        if (recvData.detail.packages.hasOwnProperty(subId)) {
+                            tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, subId, recvData.detail.packages[subId]);
 
                                         /*
                                         if (recvData.detail.result == 'OK' && keySuccess == 0) {
@@ -148,11 +151,11 @@
                                         }
                                         */
 
-                                        break;
-                                    }
-                                }
-                            } // packages.length != 0
-                    } // recvData.action == logOn
+                            break;
+                        }
+                    }
+                } // packages.length != 0
+            } // recvData.action == logOn
         };
 
         ws.onclose = function () {
@@ -194,30 +197,80 @@
             return;
         }
 
+        var keysToRedeem = [];
+        var nowKeyNum = 0;
+        keys.forEach(function (key) {
+            nowKeyNum++;
+            if (nowKeyNum <= autoDivideNum) {
+                tableInsertKey(key);
+                keysToRedeem.push(key);
+            } else {
+                tableWaitKey(key);
+            }
+        });
+
         $('#buttonRedeem').fadeOut();
         $('.progress').fadeIn();
         $('#inputKey').attr('disabled', 'disabled');
 
         var data = JSON.stringify({
             action: 'redeem',
-            keys: keys
+            keys: keysToRedeem
         });
 
-        console.log(data);
-        keys.forEach(function (key) {
-            return tableInsertKey(key);
-        });
+        //console.log(data);
 
         ws.send(data);
+        if (nowKeyNum > autoDivideNum) {
+            startTimer();
+        }
+    }
+
+    function startTimer() {
+        timer = setInterval(function () {
+            var hasMore = false;
+            var nowKeyNum = 0;
+            var keysToRedeem = [];
+
+            var rowObjects = $('tr');
+            for (var i = 1; i < rowObjects.length; i++) {
+                var rowElement = rowObjects[i];
+                var rowObject = $(rowElement);
+
+                if (rowObject.children()[2].innerHTML.includes('等待中')) {
+                    nowKeyNum++;
+                    if (nowKeyNum <= autoDivideNum) {
+                        var key = rowObject.children()[1].innerHTML.substring(6);
+                        key = key.substring(0, key.indexOf('</code>'));
+                        rowObject.children()[2].innerHTML = '<td colspan="3">\u6FC0\u6D3B\u4E2D\uFF0C\u8BF7\u7A0D\u5019...</td>';
+
+                        keysToRedeem.push(key);
+                    } else {
+                        hasMore = true;
+                        break;
+                    }
+                }
+            }
+
+            if (nowKeyNum > 0) {
+                var data = JSON.stringify({
+                    action: 'redeem',
+                    keys: keysToRedeem
+                });
+                ws.send(data);
+            }
+            if (!hasMore) {
+                clearInterval(timer);
+            }
+        }, 1000 * 20);
     }
 
     function tableUpdateKey(key, result, detail, subId, subName) {
         var rowObjects = $('tr');
         for (var i = 1; i < rowObjects.length; i++) {
-
             var rowElement = rowObjects[i];
-
             var rowObject = $(rowElement);
+
             if (rowObject.children()[1].innerHTML.includes(key) && rowObject.children()[2].innerHTML.includes('激活中')) {
                 rowObject.children()[2].remove();
 
@@ -237,7 +290,6 @@
     }
 
     function tableInsertKey(key) {
-
         keyCount++;
         var row = $('<tr></tr>');
 
@@ -247,6 +299,21 @@
         row.append('<td class="nobr"><code>' + key + '</code></td>');
         //waiting...
         row.append('<td colspan="3">\u6FC0\u6D3B\u4E2D\uFF0C\u8BF7\u7A0D\u5019...</td>');
+
+        $('tbody').append(row);
+    }
+
+    function tableWaitKey(key) {
+
+        keyCount++;
+        var row = $('<tr></tr>');
+
+        // number
+        row.append('<td class="nobr">' + keyCount + '</td>');
+        //key
+        row.append('<td class="nobr"><code>' + key + '</code></td>');
+        //waiting...
+        row.append('<td colspan="3">\u7B49\u5F85\u4E2D\uFF08' + waitSeconds + '\u79D2\uFF09...</td>');
 
         $('tbody').append(row);
     }

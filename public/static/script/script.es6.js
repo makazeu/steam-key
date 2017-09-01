@@ -54,6 +54,10 @@
     let keyCount = 0;
     let keySuccess = 0;
 
+    const autoDivideNum = 9;
+    const waitSeconds = 20;
+    let timer;
+
     function checkWebSocket() {
         return 'WebSocket' in window;
     }
@@ -203,28 +207,81 @@
         let keys = getKeysByRE($('#inputKey').val().trim());
         if (keys.length <= 0) {return;}
 
+        let keysToRedeem = [];
+        let nowKeyNum = 0;
+        keys.forEach(key => {
+           nowKeyNum++;
+           if (nowKeyNum <= autoDivideNum) {
+               tableInsertKey(key);
+               keysToRedeem.push(key);
+           } else {
+               tableWaitKey(key);
+           }
+        });
+
         $('#buttonRedeem').fadeOut();
         $('.progress').fadeIn();
         $('#inputKey').attr('disabled', 'disabled');
 
         let data = JSON.stringify({
             action  : 'redeem',
-            keys    : keys
+            keys    : keysToRedeem
         });
 
-        console.log(data);
-        keys.forEach( key => tableInsertKey(key) );
+        //console.log(data);
 
         ws.send(data);
+        if (nowKeyNum > autoDivideNum) {
+            startTimer();
+        }
+    }
+
+    function startTimer() {
+        timer = setInterval(()=>{
+            let hasMore = false;
+            let nowKeyNum = 0;
+            let keysToRedeem = [];
+
+            let rowObjects = $('tr');
+            for (let i=1; i<rowObjects.length; i++) {
+                let rowElement = rowObjects[i];
+                let rowObject = $(rowElement);
+
+                if (rowObject.children()[2].innerHTML.includes('等待中')) {
+                    nowKeyNum++;
+                    if (nowKeyNum <= autoDivideNum) {
+                        let key = rowObject.children()[1].innerHTML.substring(6);
+                        key = key.substring(0, key.indexOf('</code>'));
+                        rowObject.children()[2].innerHTML =
+                            `<td colspan="3">激活中，请稍候...</td>`;
+
+                        keysToRedeem.push(key);
+                    } else {
+                        hasMore = true;
+                        break;
+                    }
+                }
+            }
+
+            if (nowKeyNum > 0) {
+                let data = JSON.stringify({
+                    action  : 'redeem',
+                    keys    : keysToRedeem
+                });
+                ws.send(data);
+            }
+            if (!hasMore) {
+                clearInterval(timer);
+            }
+        }, 1000 * 20);
     }
 
     function tableUpdateKey(key, result, detail, subId, subName) {
         let rowObjects = $('tr');
         for (let i=1; i<rowObjects.length; i++) {
-
             let rowElement = rowObjects[i];
-
             let rowObject = $(rowElement);
+
             if ( rowObject.children()[1].innerHTML.includes(key) && 
                     rowObject.children()[2].innerHTML.includes('激活中') ) {
                 rowObject.children()[2].remove();
@@ -248,7 +305,6 @@
     }
 
     function tableInsertKey(key) {
-
         keyCount++;
         let row = $('<tr></tr>');
 
@@ -258,6 +314,21 @@
         row.append(`<td class="nobr"><code>${key}</code></td>`);
         //waiting...
         row.append(`<td colspan="3">激活中，请稍候...</td>`);
+
+        $('tbody').append(row);
+    }
+
+    function tableWaitKey(key) {
+
+        keyCount++;
+        let row = $('<tr></tr>');
+
+        // number
+        row.append(`<td class="nobr">${keyCount}</td>`);
+        //key
+        row.append(`<td class="nobr"><code>${key}</code></td>`);
+        //waiting...
+        row.append(`<td colspan="3">等待中（${waitSeconds}秒）...</td>`);
 
         $('tbody').append(row);
     }
