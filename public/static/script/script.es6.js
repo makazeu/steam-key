@@ -12,6 +12,7 @@
         'text_redeeming' : '激活中，请稍候...',
         'test_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
+        'warn_input_authcode': '请重新输入手机或邮箱验证码！',
         'alert_server_disconnected': '已和服务器断开连接！',
         'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
     };
@@ -50,7 +51,8 @@
     let ws;
     doWebSocket();
 
-    let loggedOn = false;
+    let waitForAuthCode = false;
+    let loggedIn = false;
     let keyCount = 0;
     let keySuccess = 0;
 
@@ -63,7 +65,7 @@
     }
 
     function doWebSocket() {
-        let protocol = location.protocol == 'https:' ? 'wss:' : 'ws:';
+        let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
         ws.onopen = () => {
@@ -82,7 +84,7 @@
             }
              
 
-            if (recvData.action == 'connect') {
+            if (recvData.action === 'connect') {
                 //console.log('WebSocket connected!');
                 $('#panel_status').text(allTexts['text_connected_server'] + `(${recvData.server})`);
 
@@ -90,13 +92,14 @@
                 return;
             } // recvData.action == connect
 
-            if (recvData.action == 'logOn') {
+            if (recvData.action === 'logOn') {
 
                 $('#buttonRedeem').fadeIn();
                 $('.progress').fadeOut();
 
-                if (recvData.result == 'success') {
-                    loggedOn = true;
+                if (recvData.result === 'success') {
+                    loggedIn = true;
+                    waitForAuthCode = false;
                     $('#accountInfo').fadeOut();
                     $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
                     
@@ -104,29 +107,25 @@
                         wsRedeem();
                     }
                 } 
-                else if (recvData.result == 'failed') {
+                else if (recvData.result === 'failed') {
                     let errMsg = allErrors[recvData.message] || recvData.message;
                     $('.panel-body').text(allTexts['text_logon_failed'] + errMsg);
                     ws.close();
                 }
             } // recvData.action == logOn
 
-            else if (recvData.action == 'authCode') {
-                let authCode = prompt(allTexts['prompt_input_authcode']);
-                
-                if (authCode === null || authCode.trim() === '') {
-                    $('.panel-body').text(allTexts['text_logon_failed'] + allErrors['AuthCodeError']);
-                    ws.close();
-                    return;
-                }
+            else if (recvData.action === 'authCode') {
+                $('#form_username').fadeOut();
+                $('#form_password').fadeOut();
+                $('#form_authcode').fadeIn();
+                $('.progress').fadeOut();
+                $('#buttonRedeem').fadeIn();
+                $('.panel-body').text(allTexts['warn_input_authcode']);
 
-                ws.send(JSON.stringify({
-                    action: 'authCode',
-                    authCode: authCode.trim()
-                }));
+                waitForAuthCode = true;
             } // recvData.action == authCode
 
-            else if (recvData.action == 'redeem') {
+            else if (recvData.action === 'redeem') {
                 
                 if( $('table').is(':hidden') ) {
                     $('table').fadeIn();
@@ -136,7 +135,7 @@
                 $('.progress').fadeOut();
                 $('#inputKey').removeAttr('disabled');
                 
-                if(Object.keys(recvData.detail.packages).length == 0) {
+                if(Object.keys(recvData.detail.packages).length === 0) {
                     tableUpdateKey(
                         recvData.detail.key,
                         allResults[recvData.detail.result] || recvData.detail.result,
@@ -155,7 +154,7 @@
                                 recvData.detail.packages[subId]
                             );
 
-                            if (recvData.detail.result == 'OK' && keySuccess == 0) {
+                            if (recvData.detail.result === 'OK' && keySuccess === 0) {
                                 keySuccess = 1;
                                 $('.my-alipay').fadeIn();
                             }
@@ -198,6 +197,22 @@
             authcode : authcode
         });
         ws.send(data);
+    }
+
+    function wsAuthCode() {
+        let authCode = $('#inputCode').val().trim();
+
+        if (authCode === null || authCode.trim() === '') {
+            return;
+        }
+
+        ws.send(JSON.stringify({
+            action: 'authCode',
+            authCode: authCode.trim()
+        }));
+
+        $('#form_authcode').fadeOut();
+        $('.progress').fadeIn();
     }
 
     function wsRedeem() {
@@ -285,14 +300,14 @@
                 rowObject.children()[2].remove();
 
                 // result
-                if (result == '失败')
+                if (result === '失败')
                     rowObject.append(`<td class="nobr" style="color:red">${result}</td>`);
                 else
                     rowObject.append(`<td class="nobr" style="color:green">${result}</td>`);
                 // detail
                 rowObject.append(`<td class="nobr">${detail}</td>`);
                 // sub
-                if (subId == 0) {
+                if (subId === 0) {
                     rowObject.append('<td>——</td>');
                 } else {
                     rowObject.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
@@ -332,7 +347,7 @@
     }
 
     function isBlank(str) {
-        return str.trim() == '';
+        return str.trim() === '';
     }
 
     function getKeysByRE (text) {
@@ -349,8 +364,10 @@
     }
 
     $('#buttonRedeem').click( () => {
-        if (loggedOn) {
+        if (loggedIn) {
             wsRedeem();
+        } else if(waitForAuthCode) {
+            wsAuthCode();
         } else {
             wsLogon();
         }
