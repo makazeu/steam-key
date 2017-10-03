@@ -10,11 +10,10 @@
         'text_logged_on' : '您已成功登录，Steam ID 3为：',
         'text_logon_failed': '登录失败，原因：',
         'text_redeeming' : '激活中，请稍候...',
-        'test_input_incorrect': '喵！请输入正确的信息！',
+        'text_input_incorrect': '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'warn_input_authcode': '请重新输入手机或邮箱验证码！',
         'alert_server_disconnected': '已和服务器断开连接！',
-        'prompt_input_authcode': '请输入手机令牌或邮箱验证码',
     };
 
     let allErrors = {
@@ -71,6 +70,12 @@
         ws.onopen = () => {
             //console.log('WebSocket opened!');
             //ws.send('hello server!');
+            let heartbeatTimer = setInterval(()=>{
+                let hbData = JSON.stringify({
+                    action  : 'hello',
+                });
+                ws.send(hbData);
+            }, 10 * 1000);
         };
 
         ws.onmessage = (data, flags) => {
@@ -182,7 +187,7 @@
         let authcode = $('#inputCode').val().trim();
         
         if ( isBlank(username) || isBlank(password) ) {
-            $('.panel-body').text(allTexts['test_input_incorrect']);
+            $('.panel-body').text(allTexts['text_input_incorrect']);
             return;
         }
 
