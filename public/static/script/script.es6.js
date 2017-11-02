@@ -3,11 +3,11 @@
     "use strict";
 
     let allTexts = {
-        'text_panel_tip': '温馨提醒：请确保本网页处于HTTPS连接中，以保证您的账号安全！',
+        'text_panel_tip': '温馨提示：请确保网页使用HTTPS连接以保证您的账号安全！',
         'text_connecting_server': '正在连接激活服务器...',
         'text_connected_server' : '已连接到服务器',
         'text_logging_on': '登录中，请稍候...',
-        'text_logged_on' : '您已成功登录，Steam ID 3为：',
+        'text_logged_on' : '您已成功登录，Steam ID3为：',
         'text_logon_failed': '登录失败，原因：',
         'text_redeeming' : '激活中，请稍候...',
         "text_input_incorrect": '喵！请输入正确的信息！',
