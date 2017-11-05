@@ -42,7 +42,7 @@ module.exports = (server) => {
             }
             
             // request LogOn
-            if (data.action == 'logOn') {
+            if (data.action === 'logOn') {
 
                 let domain = dm.create();
                 domain.on('error', (err) => {
@@ -61,6 +61,7 @@ module.exports = (server) => {
                     //console.log("Logged into Steam as " + steamClient.steamID.getSteam3RenderedID());
 
                     //if (serverConfig && ( serverConfig.id.startsWith('cn') || serverConfig.id.startsWith('test') )) {
+                    // noinspection ConstantIfStatementJS
                     if (true) {
                         trySend(ws, JSON.stringify({
                                 'action': 'logOn',
@@ -73,7 +74,7 @@ module.exports = (server) => {
                     checker(steamClient.steamID.getSteamID64(), result => {
 
                         //console.log(steamClient.steamID.getSteamID64(), result)
-                        if(result != 'OK') {
+                        if(result !== 'OK') {
                             sendErrorMsg(ws, 'logOn', result);
                             steamClient.logOff();
                         } 
@@ -107,7 +108,7 @@ module.exports = (server) => {
             }
 
             // request Redeem
-            else if (data.action == 'redeem') {
+            else if (data.action === 'redeem') {
 
                 //console.log('Key: %s', data.key);
 
@@ -132,7 +133,7 @@ module.exports = (server) => {
                             trySend(ws, JSON.stringify(resData));
 
                             // send sub info via post
-                            if( result==1 && serverConfig && serverConfig.log_enabled ) {
+                            if( result == 1 && serverConfig && serverConfig.log_enabled ) {
                                 for (let subId in packages) {
                                     if (packages.hasOwnProperty(subId)) {
                                         poster(serverConfig.post_address, 
@@ -149,12 +150,17 @@ module.exports = (server) => {
                     // REDEEMING ENDS
                 });
             }  // data.action == redeem
+
+            else if (data.action === 'hello') {
+                trySend(ws, JSON.stringify({
+                    action: 'hello!',
+                }));
+            }
             
         }); // ws.on == message
 
         ws.on('close', () => {
             steamClient.logOff();
-            //console.log('close!');
         });
     });
 };

@@ -70,8 +70,12 @@
         ws = new WebSocket(protocol + '//' + location.host + '/ws');
 
         ws.onopen = function () {
-            //console.log('WebSocket opened!');
-            //ws.send('hello server!');
+            var heartbeatTimer = setInterval(function () {
+                var hbData = JSON.stringify({
+                    action: 'hello'
+                });
+                ws.send(hbData);
+            }, 30 * 1000);
         };
 
         ws.onmessage = function (data, flags) {
@@ -151,14 +155,13 @@
                         }
                     }
                 } // packages.length != 0
-            } // recvData.action == logOn
+            } // recvData.action == redeem
         };
 
         ws.onclose = function () {
             $('#panel_status').text(allTexts['text_server_disconnected']);
 
             $('.form-horizontal').fadeOut();
-            //alert(allTexts['alert_server_disconnected']);
         };
     }
 
@@ -230,8 +233,6 @@
             keys: keysToRedeem
         });
 
-        //console.log(data);
-
         ws.send(data);
         if (nowKeyNum > autoDivideNum) {
             startTimer();
@@ -287,7 +288,7 @@
                 rowObject.children()[2].remove();
 
                 // result
-                if (result === '失败') rowObject.append('<td class="nobr" style="color:red">' + result + '</td>');else rowObject.append('<td class="nobr" style="color:green">' + result + '</td>');
+                if (result === '失败') rowObject.append('<td class="nobr" style="color:red">' + result + '</td>'); else rowObject.append('<td class="nobr" style="color:green">' + result + '</td>');
                 // detail
                 rowObject.append('<td class="nobr">' + detail + '</td>');
                 // sub

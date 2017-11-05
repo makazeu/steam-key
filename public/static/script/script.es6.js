@@ -1,15 +1,15 @@
-( () => {
+(() => {
 
     "use strict";
 
     let allTexts = {
         'text_panel_tip': '温馨提示：请确保网页使用HTTPS连接以保证您的账号安全！',
         'text_connecting_server': '正在连接激活服务器...',
-        'text_connected_server' : '已连接到服务器',
+        'text_connected_server': '已连接到服务器',
         'text_logging_on': '登录中，请稍候...',
-        'text_logged_on' : '您已成功登录，Steam ID3为：',
+        'text_logged_on': '您已成功登录，Steam ID3为：',
         'text_logon_failed': '登录失败，原因：',
-        'text_redeeming' : '激活中，请稍候...',
+        'text_redeeming': '激活中，请稍候...',
         "text_input_incorrect": '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'warn_input_authcode': '请重新输入手机或邮箱验证码！',
@@ -24,8 +24,8 @@
     };
 
     let allResults = {
-        'OK'    : '成功',
-        'Fail'  : '失败',
+        'OK': '成功',
+        'Fail': '失败',
     };
 
     let allPurchaseResults = {
@@ -68,20 +68,24 @@
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
         ws.onopen = () => {
-            //console.log('WebSocket opened!');
-            //ws.send('hello server!');
+            let heartbeatTimer = setInterval(() => {
+                let hbData = JSON.stringify({
+                    action: 'hello',
+                });
+                ws.send(hbData);
+            }, 30 * 1000);
         };
 
         ws.onmessage = (data, flags) => {
             //console.log('Received: %s', data.data);
 
             let recvData;
-            try{
+            try {
                 recvData = JSON.parse(data.data);
             } catch (err) {
                 return;
             }
-             
+
 
             if (recvData.action === 'connect') {
                 //console.log('WebSocket connected!');
@@ -101,11 +105,11 @@
                     waitForAuthCode = false;
                     $('#accountInfo').fadeOut();
                     $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
-                    
-                    if( !isBlank( $('#inputKey').val())) {
+
+                    if (!isBlank($('#inputKey').val())) {
                         wsRedeem();
                     }
-                } 
+                }
                 else if (recvData.result === 'failed') {
                     let errMsg = allErrors[recvData.message] || recvData.message;
                     $('.panel-body').text(allTexts['text_logon_failed'] + errMsg);
@@ -125,16 +129,16 @@
             } // recvData.action == authCode
 
             else if (recvData.action === 'redeem') {
-                
-                if( $('table').is(':hidden') ) {
+
+                if ($('table').is(':hidden')) {
                     $('table').fadeIn();
                 }
 
                 $('#buttonRedeem').fadeIn();
                 $('.progress').fadeOut();
                 $('#inputKey').removeAttr('disabled');
-                
-                if(Object.keys(recvData.detail.packages).length === 0) {
+
+                if (Object.keys(recvData.detail.packages).length === 0) {
                     tableUpdateKey(
                         recvData.detail.key,
                         allResults[recvData.detail.result] || recvData.detail.result,
@@ -162,15 +166,13 @@
                         }
                     }
                 } // packages.length != 0
-                
-            } // recvData.action == logOn
+            } // recvData.action == redeem
         };
 
         ws.onclose = () => {
             $('#panel_status').text(allTexts['text_server_disconnected']);
 
             $('.form-horizontal').fadeOut();
-            //alert(allTexts['alert_server_disconnected']);
         };
     }
 
@@ -179,8 +181,8 @@
         let username = $('#inputUsername').val().trim();
         let password = $('#inputPassword').val().trim();
         let authcode = $('#inputCode').val().trim();
-        
-        if ( isBlank(username) || isBlank(password) ) {
+
+        if (isBlank(username) || isBlank(password)) {
             $('.panel-body').text(allTexts['text_input_incorrect']);
             return;
         }
@@ -190,10 +192,10 @@
         $('.panel-body').text(allTexts['text_logging_on']);
 
         let data = JSON.stringify({
-            action   : 'logOn',
-            username : username,
-            password : password,
-            authcode : authcode
+            action: 'logOn',
+            username: username,
+            password: password,
+            authcode: authcode
         });
         ws.send(data);
     }
@@ -217,18 +219,20 @@
     function wsRedeem() {
 
         let keys = getKeysByRE($('#inputKey').val().trim());
-        if (keys.length <= 0) {return;}
+        if (keys.length <= 0) {
+            return;
+        }
 
         let keysToRedeem = [];
         let nowKeyNum = 0;
         keys.forEach(key => {
-           nowKeyNum++;
-           if (nowKeyNum <= autoDivideNum) {
-               tableInsertKey(key);
-               keysToRedeem.push(key);
-           } else {
-               tableWaitKey(key);
-           }
+            nowKeyNum++;
+            if (nowKeyNum <= autoDivideNum) {
+                tableInsertKey(key);
+                keysToRedeem.push(key);
+            } else {
+                tableWaitKey(key);
+            }
         });
 
         $('#buttonRedeem').fadeOut();
@@ -236,11 +240,9 @@
         $('#inputKey').attr('disabled', 'disabled');
 
         let data = JSON.stringify({
-            action  : 'redeem',
-            keys    : keysToRedeem
+            action: 'redeem',
+            keys: keysToRedeem
         });
-
-        //console.log(data);
 
         ws.send(data);
         if (nowKeyNum > autoDivideNum) {
@@ -249,13 +251,13 @@
     }
 
     function startTimer() {
-        timer = setInterval(()=>{
+        timer = setInterval(() => {
             let hasMore = false;
             let nowKeyNum = 0;
             let keysToRedeem = [];
 
             let rowObjects = $('tr');
-            for (let i=1; i<rowObjects.length; i++) {
+            for (let i = 1; i < rowObjects.length; i++) {
                 let rowElement = rowObjects[i];
                 let rowObject = $(rowElement);
 
@@ -277,8 +279,8 @@
 
             if (nowKeyNum > 0) {
                 let data = JSON.stringify({
-                    action  : 'redeem',
-                    keys    : keysToRedeem
+                    action: 'redeem',
+                    keys: keysToRedeem
                 });
                 ws.send(data);
             }
@@ -290,12 +292,12 @@
 
     function tableUpdateKey(key, result, detail, subId, subName) {
         let rowObjects = $('tr');
-        for (let i=1; i<rowObjects.length; i++) {
+        for (let i = 1; i < rowObjects.length; i++) {
             let rowElement = rowObjects[i];
             let rowObject = $(rowElement);
 
-            if ( rowObject.children()[1].innerHTML.includes(key) && 
-                    rowObject.children()[2].innerHTML.includes('激活中') ) {
+            if (rowObject.children()[1].innerHTML.includes(key) &&
+                rowObject.children()[2].innerHTML.includes('激活中')) {
                 rowObject.children()[2].remove();
 
                 // result
@@ -349,27 +351,27 @@
         return str.trim() === '';
     }
 
-    function getKeysByRE (text) {
+    function getKeysByRE(text) {
         text = text.trim().toUpperCase();
         let reg = new RegExp('([0-9,A-Z]{5}-){2,4}[0-9,A-Z]{5}', 'g');
         let keys = [];
 
         let result;
-        while(result = reg.exec(text)) {
+        while (result = reg.exec(text)) {
             keys.push(result[0]);
         }
 
         return keys;
     }
 
-    $('#buttonRedeem').click( () => {
+    $('#buttonRedeem').click(() => {
         if (loggedIn) {
             wsRedeem();
-        } else if(waitForAuthCode) {
+        } else if (waitForAuthCode) {
             wsAuthCode();
         } else {
             wsLogon();
         }
     });
-    
+
 })();
