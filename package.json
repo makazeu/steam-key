@@ -14,11 +14,11 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.16.2",
-    "hbs": "latest",
-    "path": "latest",
+    "hbs": "^4.0.1",
+    "path": "^0.12.7",
     "request": "^2.83.0",
-    "steam-user": "git+https://github.com/zyfworks/node-steam-user.git",
-    "ws": "^3.2.0",
+    "steam-user": "git+https://github.com/DoctorMcKay/node-steam-user.git",
+    "ws": "^3.3.0",
     "xml2js": "^0.4.19"
   }
 }
