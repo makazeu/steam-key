@@ -3,7 +3,7 @@ const dm = require('domain');
 const SteamUser = require('./steam');
 const poster = require('./post');
 
-module.exports = (server) => {
+module.exports = server => {
 
     let serverConfig;
     try {

@@ -2,7 +2,7 @@ body,
 input,
 button,
 code {
-    font-family:  "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei" !important;
+    font-family: "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei", serif !important;
     font-weight: 500;
     /*text-shadow: silver 0px 0px 1px !important;*/
 }
@@ -73,7 +73,13 @@ td {
     color: grey;
 }
 
-/* alipay */
+/* version info */
+.version {
+    color: #D8BFD8;
+    margin-left: 20px;
+}
+
+/* donate */
 .my-alipay {
     font-size: 0.9em;
     margin-left: 12px;
@@ -92,5 +98,4 @@ td {
     .poetry-title {
         font-size: 2.0em;
     }
-
 }

@@ -5,13 +5,17 @@ const path = require('path');
 
 module.exports = app => {
     // read config file
-    let serverBy = null;
+    let serverBy;
+    let version;
     try {
-        serverConfig = require('./serverconfig');
+        let serverConfig = require('./serverconfig');
         serverBy = serverConfig['serverBy'];
-        if (serverBy.trim() === '') serverBy = null;
-    } catch(err) {
+        if (serverBy !== undefined && serverBy.trim() === '') serverBy = null;
+        let versionFile = require('./version');
+        version = versionFile['version'];
+    } catch (err) {
         serverBy = null;
+        version = 'Unknown version';
     }
 
     // template engine
@@ -22,6 +26,10 @@ module.exports = app => {
 
     // routes
     app.get('/', (req, res) => {
-        res.render('index', {serverBy : serverBy});
+        res.render('index', {
+            serverBy : serverBy,
+            appVersion: version,
+            nodeVersion: process.version,
+        });
     });
 };
