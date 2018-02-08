@@ -212,6 +212,7 @@
             authCode: authCode.trim()
         }));
 
+        $('#buttonRedeem').fadeOut();
         $('#form_authcode').fadeOut();
         $('.progress').fadeIn();
     }
@@ -301,10 +302,11 @@
                 rowObject.children()[2].remove();
 
                 // result
-                if (result === '失败')
+                if (result === '失败') {
                     rowObject.append(`<td class="nobr" style="color:red">${result}</td>`);
-                else
+                } else {
                     rowObject.append(`<td class="nobr" style="color:green">${result}</td>`);
+                }
                 // detail
                 rowObject.append(`<td class="nobr">${detail}</td>`);
                 // sub
