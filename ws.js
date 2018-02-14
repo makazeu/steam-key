@@ -17,7 +17,6 @@ module.exports = server => {
     let allResults = require('./Eresult');
     let allPurchaseResults = require('./EPurchaseResult');
 
-    let isLoggedOn = false;
     let isKeepOnline = false;
 
     wss.on('connection', ws => {
@@ -44,6 +43,12 @@ module.exports = server => {
 
             // request LogOn
             if (data.action === 'logOn') {
+                if (!data.mode) {
+                    if (data.mode === 'keepOnline') {
+                        isKeepOnline = true;
+                    }
+                }
+
                 let domain = dm.create();
                 domain.on('error', err => sendErrorMsg(ws, 'logOn', err.message));
 
@@ -114,7 +119,7 @@ module.exports = server => {
             else if (data.action === 'hello') {
                 trySend(ws, JSON.stringify({action: 'hello!'}));
                 let interval = (new Date().getTime() - lastReceiveTime) / 1000;
-                if (interval > 900) {
+                if (interval > 900 && !isKeepOnline) {
                     ws.close();
                 }
             }

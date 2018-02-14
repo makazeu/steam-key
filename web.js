@@ -32,4 +32,12 @@ module.exports = app => {
             nodeVersion: process.version,
         });
     });
+
+    app.get('/run', (req, res) => {
+        res.render('run', {
+            serverBy : serverBy,
+            appVersion: version,
+            nodeVersion: process.version,
+        });
+    });
 };
