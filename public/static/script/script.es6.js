@@ -7,7 +7,7 @@
         'text_connecting_server': '正在连接激活服务器...',
         'text_connected_server': '已连接到服务器',
         'text_logging_on': '登录中，请稍候...',
-        'text_logged_on': '您已成功登录，Steam ID3为：',
+        'text_logged_on': '您已成功登录，Steam名称：',
         'text_logon_failed': '登录失败，原因：',
         'text_redeeming': '激活中，请稍候...',
         "text_input_incorrect": '喵！请输入正确的信息！',
@@ -104,7 +104,7 @@
                     loggedIn = true;
                     waitForAuthCode = false;
                     $('#accountInfo').fadeOut();
-                    $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.steamID);
+                    $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.name);
 
                     if (!isBlank($('#inputKey').val())) {
                         wsRedeem();

@@ -17,6 +17,9 @@ module.exports = server => {
     let allResults = require('./Eresult');
     let allPurchaseResults = require('./EPurchaseResult');
 
+    let isLoggedOn = false;
+    let isKeepOnline = false;
+
     wss.on('connection', ws => {
         trySend(ws, JSON.stringify({
             'action': 'connect',
@@ -52,11 +55,14 @@ module.exports = server => {
                     });
                 });
 
-                steamClient.once('loggedOn', details => {
+                steamClient.once('accountInfo', (name, country) => {
                     trySend(ws, JSON.stringify({
                         'action': 'logOn',
                         'result': 'success',
-                        'detail': {'steamID': steamClient.steamID.getSteam3RenderedID()}
+                        'detail': {
+                            'name': name,
+                            'country': country,
+                        },
                     }));
                 });
             }
