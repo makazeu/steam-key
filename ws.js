@@ -9,7 +9,7 @@ module.exports = server => {
     try {
         serverConfig = require('./config');
     } catch (err) {
-        throw new Error('找不到配置文件，请检查config.json是否存在！');
+        throw new Error('请复制config.example.json为config.json并编辑配置！');
     }
 
     const wss = new WebSocket.Server({server});

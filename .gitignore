@@ -1,6 +1,6 @@
 .vscode/
 .idea/
 node_modules/
-serverconfig.json
+config.json
 yarn.lock
 package-lock.json
