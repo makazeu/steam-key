@@ -7,9 +7,9 @@ module.exports = server => {
 
     let serverConfig;
     try {
-        serverConfig = require('./serverconfig');
+        serverConfig = require('./config');
     } catch (err) {
-        throw new Error('请编辑serverconfig.example.json文件改名为serverconfig.json！');
+        throw new Error('找不到配置文件，请检查config.json是否存在！');
     }
 
     const wss = new WebSocket.Server({server});
@@ -21,9 +21,9 @@ module.exports = server => {
 
     wss.on('connection', ws => {
         trySend(ws, JSON.stringify({
-            'action': 'connect',
-            'result': 'success',
-            'server': serverConfig ? serverConfig.name : 'Unknown',
+            action: 'connect',
+            result: 'success',
+            server: serverConfig ? serverConfig.name : 'Unknown',
         }));
 
         let steamClient = new SteamUser();
@@ -54,19 +54,21 @@ module.exports = server => {
 
                 domain.run(() => {
                     steamClient.logOn({
-                        'accountName': data.username.trim(),
-                        'password': data.password.trim(),
-                        'twoFactorCode': data.authcode.trim()
+                        accountName: data.username.trim(),
+                        password: data.password.trim(),
+                        twoFactorCode: data.authcode.trim(),
+                        rememberPassword: false,
+                        dontRememberMachine: true,
                     });
                 });
 
                 steamClient.once('accountInfo', (name, country) => {
                     trySend(ws, JSON.stringify({
-                        'action': 'logOn',
-                        'result': 'success',
-                        'detail': {
-                            'name': name,
-                            'country': country,
+                        action: 'logOn',
+                        result: 'success',
+                        detail: {
+                            name: name,
+                            country: country,
                         },
                     }));
                 });
@@ -91,19 +93,19 @@ module.exports = server => {
                     // REDEEMING STARTS
                     data.keys.forEach(keyElement => {
                         steamClient.redeemKey(keyElement, (result, details, packages) => {
-                            let resData = {'action': 'redeem', 'detail': {}};
+                            let resData = {action: 'redeem', detail: {}};
                             resData['detail']['key'] = keyElement;
-                            resData['detail']['result'] = allResults[result.toString()];
-                            resData['detail']['details'] = allPurchaseResults[details.toString()];
+                            resData['detail']['result'] = allResults[result];
+                            resData['detail']['details'] = allPurchaseResults[details];
                             resData['detail']['packages'] = packages;
                             trySend(ws, JSON.stringify(resData));
 
-                            // send sub info via post
-                            // noinspection EqualityComparisonWithCoercionJS
-                            if (result == 1 && serverConfig && serverConfig.log_enabled) {
+                            // report sub info via http post
+                            if (allResults[result] === 'OK' && serverConfig
+                                && serverConfig.enableRecord) {
                                 for (let subId in packages) {
                                     if (packages.hasOwnProperty(subId)) {
-                                        poster(serverConfig.post_address,
+                                        poster(serverConfig.recordUrl,
                                             parseInt(subId),
                                             packages[subId],
                                             serverConfig.id);
@@ -132,9 +134,9 @@ module.exports = server => {
 function sendErrorMsg(ws, action, message) {
     try {
         ws.send(JSON.stringify({
-            'action': action,
-            'result': 'failed',
-            'message': message
+            action: action,
+            result: 'failed',
+            message: message
         }));
     } catch (error) {
         // do nothing...

@@ -1,7 +1,5 @@
 {
     "id":   "test",
     "name": "本地测试",
-    "log_enabled": false,
-    "post_address": "http://your post address",
     "serverBy": "your name"
 }

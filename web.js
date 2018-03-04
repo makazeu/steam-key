@@ -8,7 +8,7 @@ module.exports = app => {
     let serverBy;
     let version;
     try {
-        let serverConfig = require('./serverconfig');
+        let serverConfig = require('./config');
         serverBy = serverConfig['serverBy'];
         if (serverBy !== undefined && serverBy.trim() === '') serverBy = null;
         let versionFile = require('./version');
