@@ -22,7 +22,7 @@ SteamUser.prototype._steamGuardPrompt = function (domain, lastCodeWrong, callbac
             // TODO
         }
 
-        this.once('inputAuthCode', callback.bind(this));
+        this.once('inputAuthCode', code => callback(code));
     } else {
         this.emit('steamGuard', domain, callback, lastCodeWrong);
     }

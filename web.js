@@ -1,6 +1,5 @@
 const express = require('express');
 const hbs = require('hbs');
-const url = require('url');
 const path = require('path');
 
 module.exports = app => {
