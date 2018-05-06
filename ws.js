@@ -28,7 +28,6 @@ module.exports = server => {
 
         let steamClient = new SteamUser();
         steamClient.setWebSocket(ws);
-        let lastReceiveTime = new Date().getTime();
 
         ws.on('message', message => {
             let data;
@@ -37,17 +36,9 @@ module.exports = server => {
             } catch (err) {
                 return;
             }
-            if (data.action !== 'hello') {
-                lastReceiveTime = new Date().getTime();
-            }
 
             // request LogOn
             if (data.action === 'logOn') {
-                if (!data.mode) {
-                    if (data.mode === 'keepOnline') {
-                        isKeepOnline = true;
-                    }
-                }
 
                 let domain = dm.create();
                 domain.on('error', err => sendErrorMsg(ws, 'logOn', err.message));
@@ -120,10 +111,6 @@ module.exports = server => {
             }  // data.action == redeem
             else if (data.action === 'hello') {
                 trySend(ws, JSON.stringify({action: 'hello!'}));
-                let interval = (new Date().getTime() - lastReceiveTime) / 1000;
-                if (interval > 900 && !isKeepOnline) {
-                    ws.close();
-                }
             }
         }); // ws.on == message
 
