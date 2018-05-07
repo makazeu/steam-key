@@ -1,153 +1,147 @@
 const WebSocket = require('ws');
-const dm = require('domain');
+const domain = require('domain');
 const SteamUser = require('./steam');
 const poster = require('./post');
+const config = require('./config');
+const resultEnum = require('./Eresult');
+const purchaseResultEnum = require('./EPurchaseResult');
 
 module.exports = server => {
-
-    let serverConfig;
-    try {
-        serverConfig = require('./config');
-    } catch (err) {
-        throw new Error('请复制config.example.json为config.json并编辑配置！');
-    }
-
     const wss = new WebSocket.Server({server});
-
-    let allResults = require('./Eresult');
-    let allPurchaseResults = require('./EPurchaseResult');
-
-    let isKeepOnline = false;
-
     wss.on('connection', ws => {
-        trySend(ws, JSON.stringify({
+        wsSend(ws, {
             action: 'connect',
             result: 'success',
-            server: serverConfig ? serverConfig.name : 'Unknown',
-        }));
+            server: config ? config.name : 'Unknown',
+        });
 
         let steamClient = new SteamUser();
         steamClient.setWebSocket(ws);
-        let lastReceiveTime = new Date().getTime();
 
-        ws.on('message', message => {
-            let data;
-            try {
-                data = JSON.parse(message);
-            } catch (err) {
-                return;
-            }
-            if (data.action !== 'hello') {
-                lastReceiveTime = new Date().getTime();
-            }
-
-            // request LogOn
-            if (data.action === 'logOn') {
-                if (!data.mode) {
-                    if (data.mode === 'keepOnline') {
-                        isKeepOnline = true;
-                    }
-                }
-
-                let domain = dm.create();
-                domain.on('error', err => sendErrorMsg(ws, 'logOn', err.message));
-
-                domain.run(() => {
-                    steamClient.logOn({
-                        accountName: data.username.trim(),
-                        password: data.password.trim(),
-                        twoFactorCode: data.authcode.trim(),
-                        rememberPassword: false,
-                        dontRememberMachine: true,
-                    });
-                });
-
-                steamClient.once('accountInfo', (name, country) => {
-                    trySend(ws, JSON.stringify({
-                        action: 'logOn',
-                        result: 'success',
-                        detail: {
-                            name: name,
-                            country: country,
-                        },
-                    }));
-                });
-            }
-            // request AuthCode
-            else if (data.action === 'authCode') {
-                if (!data.authCode || data.authCode.trim() === '') {
-                    sendErrorMsg(ws, 'logOn', 'AuthCodeError');
-                    return;
-                }
-
-                let domain = dm.create();
-                domain.on('error', err => sendErrorMsg(ws, 'logOn', err.message));
-                domain.run(() => steamClient.emit('inputAuthCode', data.authCode));
-            }
-            // request Redeem
-            else if (data.action === 'redeem') {
-                let domain = dm.create();
-                domain.on('error', err => sendErrorMsg(ws, 'redeem', err.message));
-
-                domain.run(() => {
-                    // REDEEMING STARTS
-                    data.keys.forEach(keyElement => {
-                        steamClient.redeemKey(keyElement, (result, details, packages) => {
-                            let resData = {action: 'redeem', detail: {}};
-                            resData['detail']['key'] = keyElement;
-                            resData['detail']['result'] = allResults[result];
-                            resData['detail']['details'] = allPurchaseResults[details];
-                            resData['detail']['packages'] = packages;
-                            trySend(ws, JSON.stringify(resData));
-
-                            // report sub info via http post
-                            if (allResults[result] === 'OK' && serverConfig
-                                && serverConfig.enableRecord) {
-                                for (let subId in packages) {
-                                    if (packages.hasOwnProperty(subId)) {
-                                        poster(serverConfig.recordUrl,
-                                            parseInt(subId),
-                                            packages[subId],
-                                            serverConfig.id);
-                                        break;
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    // REDEEMING ENDS
-                });
-            }  // data.action == redeem
-            else if (data.action === 'hello') {
-                trySend(ws, JSON.stringify({action: 'hello!'}));
-                let interval = (new Date().getTime() - lastReceiveTime) / 1000;
-                if (interval > 900 && !isKeepOnline) {
-                    ws.close();
-                }
-            }
-        }); // ws.on == message
-
+        ws.on('message', message => dispatchMessage(ws, steamClient, message));
         ws.on('close', () => steamClient.logOff());
     });
 };
 
-function sendErrorMsg(ws, action, message) {
-    try {
-        ws.send(JSON.stringify({
-            action: action,
-            result: 'failed',
-            message: message
+function dispatchMessage(ws, steam, message) {
+    let data = parseJSON(message);
+    if (!data.action) return;
+
+    switch (data.action) {
+        case 'ping':
+            pong(ws, data);
+            break;
+        case 'logOn':
+            doLogOn(ws, steam, data);
+            break;
+        case 'authCode':
+            doAuth(ws, steam, data);
+            break;
+        case 'redeem':
+            doRedeem(ws, steam, data);
+            break;
+        default:
+            return;
+    }
+}
+
+function pong(ws, data) {
+    wsSend(ws, {
+        action: 'pong',
+        count: data.count || 0,
+    });
+}
+
+function doLogOn(ws, steam, data) {
+    runSafely(ws, 'logOn', () => {
+        steam.logOn({
+            accountName: data.username.trim(),
+            password: data.password.trim(),
+            twoFactorCode: data.authcode.trim(),
+            rememberPassword: false,
+            dontRememberMachine: true,
+        });
+    });
+    steam.once('accountInfo', (name, country) => {
+        wsSend(ws, {
+            action: 'logOn',
+            result: 'success',
+            detail: {
+                name: name,
+                country: country,
+            },
+        });
+    })
+}
+
+function doAuth(ws, steam, data) {
+    if (!data.authCode || data.authCode.trim() === '') {
+        wsSendError(ws, 'logOn', 'AuthCodeError');
+        return;
+    }
+    runSafely(ws, 'logOn', () => steam.emit('inputAuthCode', data.authCode));
+}
+
+function doRedeem(ws, steam, data) {
+    runSafely(ws, 'redeem', () => {
+        data.keys.forEach(async key => redeemKey(steam, key).then(res => {
+            wsSend(ws, res);
+            if (config && config.enableLog) {
+                for (let subId in res.detail.packages) {
+                    if (res.detail.packages.hasOwnProperty(subId)) {
+                        poster(config.postUrl, subId, res.detail.packages[subId], config.id);
+                        break;
+                    }
+                }
+            }
         }));
-    } catch (error) {
-        // do nothing...
-    }
+    });
 }
 
-function trySend(ws, stuff) {
+function redeemKey(steam, key) {
+    return new Promise(resolve => {
+        steam.redeemKey(key, (result, detail, packages) => {
+            resolve({
+                action: 'redeem',
+                detail: {
+                    key: key,
+                    result: resultEnum[result],
+                    detail: purchaseResultEnum[detail],
+                    packages: packages,
+                },
+            });
+        });
+    })
+}
+
+function wsSendError(ws, action, message) {
+    wsSend(ws, {
+        action: action,
+        result: 'failed',
+        message: message
+    });
+}
+
+function wsSend(ws, stuff) {
     try {
-        ws.send(stuff);
+        let data = typeof stuff === 'string' ? stuff : JSON.stringify(stuff);
+        ws.send(data);
     } catch (error) {
         // do nothing...
     }
 }
 
+function runSafely(ws, action, runnable, ...parameters) {
+    let dm = domain.create();
+    dm.on('error', err => wsSendError(ws, action, err.message || 'something went wrong...'));
+    parameters && parameters.forEach(p => dm.add(p));
+    dm.run(runnable);
+}
+
+function parseJSON(json, defaultValue = {}) {
+    try {
+        return JSON.parse(json);
+    } catch (ex) {
+        return defaultValue;
+    }
+}

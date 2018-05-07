@@ -1,10 +1,8 @@
-'use strict';
-
-(function () {
+(() => {
 
     "use strict";
 
-    var allTexts = {
+    let allTexts = {
         'text_panel_tip': '温馨提示：请确保网页使用HTTPS连接以保证您的账号安全！',
         'text_connecting_server': '正在连接激活服务器...',
         'text_connected_server': '已连接到服务器',
@@ -15,29 +13,29 @@
         "text_input_incorrect": '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'warn_input_authcode': '请重新输入手机或邮箱验证码！',
-        'alert_server_disconnected': '已和服务器断开连接！'
+        'alert_server_disconnected': '已和服务器断开连接！',
     };
 
-    var allErrors = {
+    let allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
-        'AuthCodeError': '验证码有误'
+        'AuthCodeError': '验证码有误',
     };
 
-    var allResults = {
+    let allResults = {
         'OK': '成功',
-        'Fail': '失败'
+        'Fail': '失败',
     };
 
-    var allPurchaseResults = {
+    let allPurchaseResults = {
         'NoDetail': '——',
         'AlreadyPurchased': '已拥有',
         'DuplicateActivationCode': '重复激活',
         'BadActivationCode': '无效激活码',
         'RateLimited': '次数上限',
         'DoesNotOwnRequiredApp': '缺少主游戏',
-        'RestrictedCountry': '区域限制'
+        'RestrictedCountry': '区域限制',
     };
 
     if (checkWebSocket()) {
@@ -49,48 +47,50 @@
     $('#panel_status').text(allTexts['text_connecting_server']);
     $('.panel-body').text(allTexts['text_panel_tip']);
 
-    var ws = void 0;
+    let ws;
     doWebSocket();
 
-    var waitForAuthCode = false;
-    var loggedIn = false;
-    var keyCount = 0;
-    var keySuccess = 0;
+    let waitForAuthCode = false;
+    let loggedIn = false;
+    let keyCount = 0;
+    let keySuccess = 0;
 
-    var autoDivideNum = 9;
-    var waitSeconds = 20;
-    var timer = void 0;
+    const autoDivideNum = 9;
+    const waitSeconds = 20;
+    let timer;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
     }
 
     function doWebSocket() {
-        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        ws = new WebSocket(protocol + '//' + location.host + '/ws');
+        let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
-        ws.onopen = function () {
-            var heartbeatTimer = setInterval(function () {
-                var hbData = JSON.stringify({
-                    action: 'hello'
-                });
-                ws.send(hbData);
+        let pingCount = 0;
+        ws.onopen = () => {
+            setInterval(() => {
+                ws.send(JSON.stringify({
+                    action: 'ping',
+                    count: ++pingCount,
+                }));
             }, 30 * 1000);
         };
 
-        ws.onmessage = function (data, flags) {
+        ws.onmessage = (data, flags) => {
             //console.log('Received: %s', data.data);
 
-            var recvData = void 0;
+            let recvData;
             try {
                 recvData = JSON.parse(data.data);
             } catch (err) {
                 return;
             }
 
+
             if (recvData.action === 'connect') {
                 //console.log('WebSocket connected!');
-                $('#panel_status').text(allTexts['text_connected_server'] + ('(' + recvData.server + ')'));
+                $('#panel_status').text(allTexts['text_connected_server'] + `(${recvData.server})`);
 
                 $('.form-horizontal').fadeIn();
                 return;
@@ -110,8 +110,9 @@
                     if (!isBlank($('#inputKey').val())) {
                         wsRedeem();
                     }
-                } else if (recvData.result === 'failed') {
-                    var errMsg = allErrors[recvData.message] || recvData.message;
+                }
+                else if (recvData.result === 'failed') {
+                    let errMsg = allErrors[recvData.message] || recvData.message;
                     $('.panel-body').text(allTexts['text_logon_failed'] + errMsg);
                     ws.close();
                 }
@@ -129,7 +130,6 @@
             } // recvData.action == authCode
 
             else if (recvData.action === 'redeem') {
-
                 if ($('table').is(':hidden')) {
                     $('table').fadeIn();
                 }
@@ -139,12 +139,23 @@
                 $('#inputKey').removeAttr('disabled');
 
                 if (Object.keys(recvData.detail.packages).length === 0) {
-                    tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, 0, '');
+                    tableUpdateKey(
+                        recvData.detail.key,
+                        allResults[recvData.detail.result] || recvData.detail.result,
+                        allPurchaseResults[recvData.detail.detail] || recvData.detail.detail,
+                        0, ''
+                    );
                 } // packages.length == 0
                 else {
-                    for (var subId in recvData.detail.packages) {
+                    for (let subId in recvData.detail.packages) {
                         if (recvData.detail.packages.hasOwnProperty(subId)) {
-                            tableUpdateKey(recvData.detail.key, allResults[recvData.detail.result] || recvData.detail.result, allPurchaseResults[recvData.detail.details] || recvData.detail.details, subId, recvData.detail.packages[subId]);
+                            tableUpdateKey(
+                                recvData.detail.key,
+                                allResults[recvData.detail.result] || recvData.detail.result,
+                                allPurchaseResults[recvData.detail.detail] || recvData.detail.detail,
+                                subId,
+                                recvData.detail.packages[subId]
+                            );
 
                             if (recvData.detail.result === 'OK' && keySuccess === 0) {
                                 keySuccess = 1;
@@ -158,7 +169,7 @@
             } // recvData.action == redeem
         };
 
-        ws.onclose = function () {
+        ws.onclose = () => {
             $('#panel_status').text(allTexts['text_server_disconnected']);
 
             $('.form-horizontal').fadeOut();
@@ -167,9 +178,9 @@
 
     function wsLogon() {
 
-        var username = $('#inputUsername').val().trim();
-        var password = $('#inputPassword').val().trim();
-        var authcode = $('#inputCode').val().trim();
+        let username = $('#inputUsername').val().trim();
+        let password = $('#inputPassword').val().trim();
+        let authcode = $('#inputCode').val().trim();
 
         if (isBlank(username) || isBlank(password)) {
             $('.panel-body').text(allTexts['text_input_incorrect']);
@@ -180,7 +191,7 @@
         $('.progress').fadeIn();
         $('.panel-body').text(allTexts['text_logging_on']);
 
-        var data = JSON.stringify({
+        let data = JSON.stringify({
             action: 'logOn',
             username: username,
             password: password,
@@ -190,7 +201,7 @@
     }
 
     function wsAuthCode() {
-        var authCode = $('#inputCode').val().trim();
+        let authCode = $('#inputCode').val().trim();
 
         if (authCode === null || authCode.trim() === '') {
             return;
@@ -208,14 +219,14 @@
 
     function wsRedeem() {
 
-        var keys = getKeysByRE($('#inputKey').val().trim());
+        let keys = getKeysByRE($('#inputKey').val().trim());
         if (keys.length <= 0) {
             return;
         }
 
-        var keysToRedeem = [];
-        var nowKeyNum = 0;
-        keys.forEach(function (key) {
+        let keysToRedeem = [];
+        let nowKeyNum = 0;
+        keys.forEach(key => {
             nowKeyNum++;
             if (nowKeyNum <= autoDivideNum) {
                 tableInsertKey(key);
@@ -229,7 +240,7 @@
         $('.progress').fadeIn();
         $('#inputKey').attr('disabled', 'disabled');
 
-        var data = JSON.stringify({
+        let data = JSON.stringify({
             action: 'redeem',
             keys: keysToRedeem
         });
@@ -241,22 +252,23 @@
     }
 
     function startTimer() {
-        timer = setInterval(function () {
-            var hasMore = false;
-            var nowKeyNum = 0;
-            var keysToRedeem = [];
+        timer = setInterval(() => {
+            let hasMore = false;
+            let nowKeyNum = 0;
+            let keysToRedeem = [];
 
-            var rowObjects = $('tr');
-            for (var i = 1; i < rowObjects.length; i++) {
-                var rowElement = rowObjects[i];
-                var rowObject = $(rowElement);
+            let rowObjects = $('tr');
+            for (let i = 1; i < rowObjects.length; i++) {
+                let rowElement = rowObjects[i];
+                let rowObject = $(rowElement);
 
                 if (rowObject.children()[2].innerHTML.includes('等待中')) {
                     nowKeyNum++;
                     if (nowKeyNum <= autoDivideNum) {
-                        var key = rowObject.children()[1].innerHTML.substring(6);
+                        let key = rowObject.children()[1].innerHTML.substring(6);
                         key = key.substring(0, key.indexOf('</code>'));
-                        rowObject.children()[2].innerHTML = '<td colspan="3">\u6FC0\u6D3B\u4E2D\uFF0C\u8BF7\u7A0D\u5019...</td>';
+                        rowObject.children()[2].innerHTML =
+                            `<td colspan="3">激活中，请稍候...</td>`;
 
                         keysToRedeem.push(key);
                     } else {
@@ -267,7 +279,7 @@
             }
 
             if (nowKeyNum > 0) {
-                var data = JSON.stringify({
+                let data = JSON.stringify({
                     action: 'redeem',
                     keys: keysToRedeem
                 });
@@ -280,27 +292,28 @@
     }
 
     function tableUpdateKey(key, result, detail, subId, subName) {
-        var rowObjects = $('tr');
-        for (var i = 1; i < rowObjects.length; i++) {
-            var rowElement = rowObjects[i];
-            var rowObject = $(rowElement);
+        let rowObjects = $('tr');
+        for (let i = 1; i < rowObjects.length; i++) {
+            let rowElement = rowObjects[i];
+            let rowObject = $(rowElement);
 
-            if (rowObject.children()[1].innerHTML.includes(key) && rowObject.children()[2].innerHTML.includes('激活中')) {
+            if (rowObject.children()[1].innerHTML.includes(key) &&
+                rowObject.children()[2].innerHTML.includes('激活中')) {
                 rowObject.children()[2].remove();
 
                 // result
                 if (result === '失败') {
-                    rowObject.append('<td class="nobr" style="color:red">' + result + '</td>');
+                    rowObject.append(`<td class="nobr" style="color:red">${result}</td>`);
                 } else {
-                    rowObject.append('<td class="nobr" style="color:green">' + result + '</td>');
+                    rowObject.append(`<td class="nobr" style="color:green">${result}</td>`);
                 }
                 // detail
-                rowObject.append('<td class="nobr">' + detail + '</td>');
+                rowObject.append(`<td class="nobr">${detail}</td>`);
                 // sub
                 if (subId === 0) {
                     rowObject.append('<td>——</td>');
                 } else {
-                    rowObject.append('<td><code>' + subId + '</code> <a href="https://steamdb.info/sub/' + subId + '/" target="_blank">' + subName + '</a></td>');
+                    rowObject.append(`<td><code>${subId}</code> <a href="https://steamdb.info/sub/${subId}/" target="_blank">${subName}</a></td>`);
                 }
                 break;
             }
@@ -309,14 +322,14 @@
 
     function tableInsertKey(key) {
         keyCount++;
-        var row = $('<tr></tr>');
+        let row = $('<tr></tr>');
 
         // number
-        row.append('<td class="nobr">' + keyCount + '</td>');
+        row.append(`<td class="nobr">${keyCount}</td>`);
         //key
-        row.append('<td class="nobr"><code>' + key + '</code></td>');
+        row.append(`<td class="nobr"><code>${key}</code></td>`);
         //waiting...
-        row.append('<td colspan="3">\u6FC0\u6D3B\u4E2D\uFF0C\u8BF7\u7A0D\u5019...</td>');
+        row.append(`<td colspan="3">激活中，请稍候...</td>`);
 
         $('tbody').append(row);
     }
@@ -324,14 +337,14 @@
     function tableWaitKey(key) {
 
         keyCount++;
-        var row = $('<tr></tr>');
+        let row = $('<tr></tr>');
 
         // number
-        row.append('<td class="nobr">' + keyCount + '</td>');
+        row.append(`<td class="nobr">${keyCount}</td>`);
         //key
-        row.append('<td class="nobr"><code>' + key + '</code></td>');
+        row.append(`<td class="nobr"><code>${key}</code></td>`);
         //waiting...
-        row.append('<td colspan="3">\u7B49\u5F85\u4E2D\uFF08' + waitSeconds + '\u79D2\uFF09...</td>');
+        row.append(`<td colspan="3">等待中（${waitSeconds}秒）...</td>`);
 
         $('tbody').append(row);
     }
@@ -342,10 +355,10 @@
 
     function getKeysByRE(text) {
         text = text.trim().toUpperCase();
-        var reg = new RegExp('([0-9,A-Z]{5}-){2,4}[0-9,A-Z]{5}', 'g');
-        var keys = [];
+        let reg = new RegExp('([0-9,A-Z]{5}-){2,4}[0-9,A-Z]{5}', 'g');
+        let keys = [];
 
-        var result = void 0;
+        let result;
         while (result = reg.exec(text)) {
             keys.push(result[0]);
         }
@@ -353,7 +366,7 @@
         return keys;
     }
 
-    $('#buttonRedeem').click(function () {
+    $('#buttonRedeem').click(() => {
         if (loggedIn) {
             wsRedeem();
         } else if (waitForAuthCode) {
@@ -362,4 +375,5 @@
             wsLogon();
         }
     });
+
 })();

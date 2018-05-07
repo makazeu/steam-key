@@ -1,10 +1,8 @@
-'use strict';
-
-(function () {
+(() => {
 
     "use strict";
 
-    var allTexts = {
+    let allTexts = {
         'text_panel_tip': '温馨提示：请确保网页使用HTTPS连接以保证您的账号安全！',
         'text_connecting_server': '正在连接服务器...',
         'text_connected_server': '已连接到服务器',
@@ -14,14 +12,14 @@
         "text_input_incorrect": '喵！请输入正确的信息！',
         'text_server_disconnected': '已和服务器断开连接，请刷新本网页',
         'warn_input_authcode': '请重新输入手机或邮箱验证码！',
-        'alert_server_disconnected': '已和服务器断开连接！'
+        'alert_server_disconnected': '已和服务器断开连接！',
     };
 
-    var allErrors = {
+    let allErrors = {
         'InvalidPassword': '无效的密码',
         'TwoFactorCodeMismatch': '安全令错误',
         'Limited account': '受限用户暂无法使用',
-        'AuthCodeError': '验证码有误'
+        'AuthCodeError': '验证码有误',
     };
 
     if (checkWebSocket()) {
@@ -33,28 +31,26 @@
     $('#panel_status').text(allTexts['text_connecting_server']);
     $('.panel-body').text(allTexts['text_panel_tip']);
 
-    var ws = void 0;
+    let ws;
     doWebSocket();
 
-    var waitForAuthCode = false;
-    var loggedIn = false;
+    let waitForAuthCode = false;
+    let loggedIn = false;
 
     function checkWebSocket() {
         return 'WebSocket' in window;
     }
 
     function doWebSocket() {
-        var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        ws = new WebSocket(protocol + '//' + location.host + '/ws');
+        let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
-        ws.onopen = function () {
-            setInterval(function () {
-                return ws.send(JSON.stringify({ action: 'hello' }));
-            }, 30 * 1000);
+        ws.onopen = () => {
+            setInterval(() => ws.send(JSON.stringify({action: 'hello'})), 30 * 1000);
         };
 
-        ws.onmessage = function (data) {
-            var recvData = void 0;
+        ws.onmessage = data => {
+            let recvData;
             try {
                 recvData = JSON.parse(data.data);
             } catch (err) {
@@ -62,7 +58,7 @@
             }
 
             if (recvData.action === 'connect') {
-                $('#panel_status').text(allTexts['text_connected_server'] + ('(' + recvData.server + ')'));
+                $('#panel_status').text(allTexts['text_connected_server'] + `(${recvData.server})`);
 
                 $('.form-horizontal').fadeIn();
                 return;
@@ -77,11 +73,13 @@
                     loggedIn = true;
                     waitForAuthCode = false;
                     $('#accountInfo').fadeOut();
-                    $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.name + '，IP地区：' + recvData.detail.country);
+                    $('.panel-body').text(allTexts['text_logged_on'] + recvData.detail.name
+                        + '，IP地区：' + recvData.detail.country);
                     $('.my-alipay').fadeIn();
                     $('#buttonLogOn').fadeOut();
-                } else if (recvData.result === 'failed') {
-                    var errMsg = allErrors[recvData.message] || recvData.message;
+                }
+                else if (recvData.result === 'failed') {
+                    let errMsg = allErrors[recvData.message] || recvData.message;
                     $('.panel-body').text(allTexts['text_logon_failed'] + errMsg);
                     ws.close();
                 }
@@ -99,16 +97,16 @@
             } // recvData.action == authCode
         };
 
-        ws.onclose = function () {
+        ws.onclose = () => {
             $('#panel_status').text(allTexts['text_server_disconnected']);
             $('.form-horizontal').fadeOut();
         };
     }
 
     function wsLogon() {
-        var username = $('#inputUsername').val().trim();
-        var password = $('#inputPassword').val().trim();
-        var authcode = $('#inputCode').val().trim();
+        let username = $('#inputUsername').val().trim();
+        let password = $('#inputPassword').val().trim();
+        let authcode = $('#inputCode').val().trim();
 
         if (isBlank(username) || isBlank(password)) {
             $('.panel-body').text(allTexts['text_input_incorrect']);
@@ -120,18 +118,18 @@
         // noinspection JSJQueryEfficiency
         $('.panel-body').text(allTexts['text_logging_on']);
 
-        var data = JSON.stringify({
+        let data = JSON.stringify({
             action: 'logOn',
             username: username,
             password: password,
             authcode: authcode,
-            mode: 'keepOnline'
+            mode: 'keepOnline',
         });
         ws.send(data);
     }
 
     function wsAuthCode() {
-        var authCode = $('#inputCode').val().trim();
+        let authCode = $('#inputCode').val().trim();
 
         if (authCode === null || authCode.trim() === '') {
             return;
@@ -151,7 +149,7 @@
         return str.trim() === '';
     }
 
-    $('#buttonLogOn').click(function () {
+    $('#buttonLogOn').click(() => {
         if (waitForAuthCode) {
             wsAuthCode();
         } else {
