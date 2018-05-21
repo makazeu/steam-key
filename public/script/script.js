@@ -56,6 +56,8 @@
 
         ws.onclose = () => {
             setServerStatus(ServerStatus.DISCONNECTED);
+            elementDisable('#button-login');
+            elementDisable('#button-redeem');
         };
     }
 
