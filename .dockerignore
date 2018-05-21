@@ -31,4 +31,4 @@ build/
 .DS_Store
 
 Dockerfile
-serverconfig.json
+config.json

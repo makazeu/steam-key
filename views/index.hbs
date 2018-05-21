@@ -1,162 +1,233 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>Steam 雲激活</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- StyleSheets -->
-    <link href="/static/style/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/style/normalize.css" rel="stylesheet">
-    <link href="/static/style/jumbotron-narrow.css" rel="stylesheet">
-    <link href="/static/style/style.css" rel="stylesheet">
-    <!-- JavaScripts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Redeem Records</title>
+    <!-- style -->
+    <link rel="stylesheet" href="style/spectre.min.css">
+    <link rel="stylesheet" href="style/spectre-icons.min.css">
+    <link rel="stylesheet" href="style/style.css">
+    <!-- script -->
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <!-- <script src="/static/script/bootstrap.min.js"></script> -->
 </head>
 
 <body>
-    <div class="container">
-        <div class="header clearfix">
-            <a class="text-muted site-title" href="https://steamcn.com/t267770-1-1" target="_blank">
-                <span class="glyphicon glyphicon-cloud"></span> Steam 雲激活
-            </a>
-        </div>
-
-        <div class="panel panel-default my-panel">
-            <!-- Default panel contents -->
-            <div class="panel-heading">
-                当前状态： <span id="panel_status">无法加载脚本，可能网络不稳定或浏览器不支持</span>
+<div class="container">
+    <div class="columns">
+        <div class="column col-xs-12 col-8 col-mx-auto">
+            <h3 class="text-gray badge" data-badge="V2">☁ Steam雲激活</h3>
+            <div class="columns">
+                <div class="column col-sm-12 col-md-12 col-6 col-mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title h5 text-gray">
+                                <i class="icon icon-link"></i>
+                                服务器信息
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>服务器名称：
+                                <mark id="text-server-name">未连接</mark>
+                            </p>
+                            连接状态：
+                            <span class="label label-warning label-rounded" id="server-status-connecting"
+                                  style="display: none">
+                                    <i class="icon icon-resize-horiz"></i> 连接中
+                                </span>
+                            <span class="label label-success label-rounded" id="server-status-connected"
+                                  style="display: none">
+                                    <i class="icon icon-check"></i> 已连接
+                                </span>
+                            <span class="label label-error label-rounded" id="server-status-disconnected">
+                                    <i class="icon icon-cross"></i> 已断开
+                                </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="column col-sm-12 col-md-12 col-6 col-mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title h5 text-gray">
+                                <i class="icon icon-people"></i> 账号信息
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p>Steam用户名：
+                                <u>
+                                    <i id="userinfo-nickname">请先登录</i>
+                                </u>
+                            </p>
+                            IP地理位置：
+                            <span class="label label-rounded tooltip tooltip-bottom" id="userinfo-location"
+                                  data-tooltip="该区域仅决定您是否能游玩锁运行的游戏，&#13;&#10;与能否激活该区域的Key无关。">
+                                    ——
+                                </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal" id="modal-donate">
+                <a class="modal-overlay" aria-label="Close"></a>
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <a class="btn btn-clear float-right" aria-label="Close"></a>
+                        <div class="modal-title h5">厚颜无耻地递上二维码 (*/ω＼*)</div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="content">
+                            <h6>租用服务器需要资金... 谢谢！爱你哟~ 比心
+                                <span class="text-error">♥</span>~~
+                            </h6>
+                            <div class="text-center">
+                                <img src="image/pay.png" alt="alipay"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal modal-sm" id="authcode-modal">
+                <a class="modal-overlay" aria-label="Close"></a>
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title h5">🔑 请输入验证码</div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="content">
+                            <form>
+                                <div class="form-group">
+                                    <label class="form-label">手机(或邮箱)令牌:</label>
+                                    <input class="form-input" type="text" id="input-authcode-modal">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="text-center">
+                            <button class="btn" id="button-authcode">确 定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="toast toast-primary text-center" id="toast-info-wrapper">
+                    <span id="toast-info">
+                        <i class="icon icon-downward"></i>
+                        欢迎使用云激活~ 请先登录Steam账号
+                        <i class="icon icon-downward"></i>
+                    </span>
+            </div>
+            <div class="toast toast-primary text-center" id="toast-donate" style="display: none">
+                哟~激活成功了呢，真棒！ 请问...您愿意打赏网站开发者吗？
+                <button class="btn btn-sm" onclick="$('#modal-donate').addClass('active')">👌 我愿意</button>
+                <button class="btn btn-sm" onclick="$('#toast-donate').fadeOut()" )>😒 丑拒</button>
             </div>
 
-            <div class="panel-body"></div>
+            <div id="form-login">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-3">
+                            <label class="form-label">Username</label>
+                        </div>
+                        <div class="col-9 has-icon-left">
+                            <input class="form-input" type="text" id="input-username" placeholder="用户名(非昵称)">
+                            <i class="form-icon icon icon-people"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-3">
+                            <label class="form-label">Password</label>
+                        </div>
+                        <div class="col-9 has-icon-left">
+                            <input class="form-input" type="password" id="input-password" placeholder="密码">
+                            <i class="form-icon icon icon-apps"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-3">
+                            <label class="form-label">AuthCode</label>
+                        </div>
+                        <div class="col-9  has-icon-left">
+                            <input class="form-input" type="text" id="input-authcode" placeholder="手机令牌(若为邮箱验证码请留空)">
+                            <i class="form-icon icon icon-more-horiz"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
 
-            
-            <div class="my-alipay" id="alipay">
-                哟~成功激活了一个Key诶，真不错！ 请问...您愿意打赏作者一点点小费吗？
-                <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">
-                    我愿意！<span class="glyphicon glyphicon-heart"></span>
-                </button> &nbsp;
-                <button type="button" class="btn btn-default btn-sm" onclick=$('.my-alipay').html('(｡•́︿•̀｡)')>丑拒</button>
+                        <div class="columns col-mx-auto">
+                            <button class="btn" id="button-login" disabled="disabled">
+                                <i class="icon icon-check"></i> 登录Steam
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- Table -->
-            <div class="table-responsive table-condensed">
-                <table class="table table-hover" style="display: none">
-                    <caption>激活记录：</caption>
+
+            <div id="form-redeem" style="display: none">
+                <div class="form-horizontal">
+                    <!-- form textarea control -->
+                    <div class="form-group">
+                        <label class="form-label">Steam Key</label>
+                        <textarea class="form-input" rows="3" placeholder="支持批量激活并自动识别文本中的KEY"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="columns col-mx-auto">
+                            <button class="btn badge" data-badge="0" id="button-redeem">
+                                <i class="icon icon-forward"></i> 激活KEY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div id="redeem-records" class="container" style="display: none;">
+                <table class="table table-striped table-hover table-scroll">
+                    <h4 class="text-center text-gray">
+                        # 激活记录
+                    </h4>
                     <thead>
+                    <tr>
                         <th>No.</th>
                         <th>Key</th>
-                        <th>结果</th>
-                        <th>详情</th>
-                        <th>Sub</th>
+                        <th>状态</th>
+                        <th style="width: 100%">Info</th>
+                    </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                    </tbody>
                 </table>
-            </div> <!-- /table div ends -->
-
-        </div> <!-- /panel div ends -->
-
-        <from class="form-horizontal" style="display: none">
-            <div id="accountInfo">
-                <div class="form-group" id="form_username">
-                    <label for="inputUsername" class="col-sm-2 control-label">Username</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" id="inputUsername" placeholder="Steam Username">
-                    </div>
-                </div>
-
-                <div class="form-group" id="form_password">
-                    <label for="inputPassword" class="col-sm-2 control-label">Password</label>
-                    <div class="col-sm-10">
-                        <input type="password" class="form-control" id="inputPassword" placeholder="Steam Password">
-                    </div>
-                </div>
-
-                <div class="form-group" id="form_authcode">
-                    <label for="inputCode" class="col-sm-2 control-label">AuthCode</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" id="inputCode" placeholder="手机令牌（若为邮箱验证，请留空）">
-                    </div>
-                </div>
-            </div>  <!-- /id:accountInfo -->
-
-            <div class="form-group">
-                <label for="inputKey" class="col-sm-2 control-label">Steam Key</label>
-                <div class="col-sm-10">
-                    <textarea class="form-control" rows="3" id="inputKey" placeholder="可留空稍后再输入；支持批量激活，可以把整个网页文字复制过来&#10;若一次激活的Key的数量超过9个则会自动分批激活（等待20秒）"></textarea>
-                </div>
             </div>
+        </div>
+    </div>
+    <!-- /columns -->
+</div>
 
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" class="btn btn-default" id="buttonRedeem">Redeem</button>
-                </div>
-            </div>
+<footer class="footer column col-xs-12 col-8 col-mx-auto">
+    <br>
+    <div class="divider"></div>
+    <div class="columns">
+        <div class="column col-mr-auto">
+            Designed and built with
+            <span class="text-error">♥</span> by
+            <a href="http://weibo.com/zyf8" target="_blank" class="tooltip tooltip-top" data-tooltip="喵~">
+                Makazeu</a>.
+        </div>
 
-            <div class="progress" style="display: none">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                </div>
-            </div>
-        </from> 
-
-        <footer class="footer">
-            <span class="copyright">
-                &copy; 2018 <span class="glyphicon glyphicon-heart"></span> Makazeu&nbsp;
-            </span>
-            {{#if serverBy}}
-                &nbsp; // &nbsp;
-                <span style="margin:auto">Server by {{serverBy}}</span>
-            {{else}}
-                <span class="copyright">
-                    <a href="http://weibo.com/zyf8" target="_blank">我的微博</a>&nbsp;
-                </span>
-                <span class="copyright">
-                    <a href="http://steamcommunity.com/id/makazeu" target="_blank">我的Steam</a>&nbsp;
-                </span>
-            {{/if}}
-            <span class="version">
-                {{appVersion}} on Node.js {{nodeVersion}}
-            </span>
-        </footer>
-    </div> <!-- /container -->
-
-    <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">厚颜无耻地递上支付二维码 (*/ω＼*)</h4>
-                </div>
-
-                <div class="modal-body">
-                    <h5>租用服务器需要资金... 你懂的... 谢谢！爱你哟~ 
-                        比心<span class="glyphicon glyphicon-heart"></span>~~
-                    </h5>
-                    <div style="text-align:center">
-                        <img src="/static/image/pay.png"  alt="alipay" />
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div> <!-- /.modal-content -->
-        </div> <!-- /.modal-dialog -->
-    </div> <!-- /.modal -->
-
-    <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-60000402-7', 'auto');
-  ga('send', 'pageview');
-
-</script>
-
-    <script src="/static/script/script.js"></script>
-
+        <div class="column col-ml-auto text-right">
+            Find me on
+            <a href="http://weibo.com/zyf8" target="_blank">Weibo</a> or
+            <a href="https://steamcommunity.com/id/makazeu" target="_blank">Steam</a>. Code on
+            <a href="https://github.com/zyfworks/steam-key" target="_blank" class="tooltip"
+               data-tooltip="{{appVersion}} on Node.js {{nodeVersion}}">Github</a>.
+        </div>
+    </div>
+</footer>
+<!-- /container -->
+<script src="script/script.js"></script>
+<script src="script/analytics.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,34 @@
+body,
+input,
+button,
+code {
+    font-family: "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei", serif !important;
+    font-weight: 500;
+    /*text-shadow: silver 0px 0px 1px !important;*/
+}
+
+::selection {
+    color:#222;
+    background:#D6EDFF;
+    text-shadow:none;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+    text-decoration: none;
+}
+
+.footer {
+    color: #acb3c2;
+    padding: .5rem .5rem .5rem .5rem;
+}
+
+.footer a {
+    color: #667189;
+}
+
+.footer a:hover {
+    color: #4240d4;
+}

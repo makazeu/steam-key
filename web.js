@@ -26,15 +26,6 @@ module.exports = app => {
     // routes
     app.get('/', (req, res) => {
         res.render('index', {
-            serverBy : serverBy,
-            appVersion: version,
-            nodeVersion: process.version,
-        });
-    });
-
-    app.get('/run', (req, res) => {
-        res.render('run', {
-            serverBy : serverBy,
             appVersion: version,
             nodeVersion: process.version,
         });
