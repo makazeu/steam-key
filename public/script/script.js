@@ -6,6 +6,7 @@
     let successRecordNum = 0;
 
     let loggedIn = false;
+    let unusedKeys = [];
 
     const AutoDivideThreshold = 9;
     const RedeemTimeoutSeconds = 15;
@@ -16,6 +17,9 @@
     function init() {
         $('#modal-donate').find('[aria-label="Close"]').click(() => {
             $('#modal-donate').removeClass('active');
+        });
+        $('#modal-keys').find('[aria-label="Close"]').click(() => {
+            $('#modal-keys').removeClass('active');
         });
         $('#button-login').click(() => {
             elementDisable('#input-username');
@@ -151,7 +155,7 @@
     function receiveRedeemResult(data) {
         if (Object.keys(data.detail.packages).length === 0) {
             tableUpdateRedeemResult(data.detail.key,
-                RedeemResults[data.detail.result] || receiveRedeemResult,
+                RedeemResults[data.detail.result] || data.detail.result,
                 PurchaseResults[data.detail.detail] || data.detail.detail, 0, '');
         } else {
             for (let subId in data.detail.packages) {
@@ -161,9 +165,29 @@
                 tableUpdateRedeemResult(data.detail.key,
                     RedeemResults[data.detail.result] || data.detail.result,
                     PurchaseResults[data.detail.detail] || data.detail.detail,
-                    subId, data.detail.packages[subId]
-                );
+                    subId, data.detail.packages[subId]);
+                break;
             }
+        }
+    }
+
+    function updateUnusedKeys(key, result, detail, subId, subName) {
+        let success = result === RedeemResults.OK;
+        if (success && unusedKeys.includes(key)) {
+            unusedKeys = unusedKeys.filter(item => item !== key);
+
+            $('#list-keys li').forEach(listElement => {
+                if (listElement.innerHTML.includes(key)) {
+                    let listObject = $(listElement);
+                    listObject.remove();
+                }
+            });
+        } else if (!success && !unusedKeys.includes(key) && UnusedKeyReasons.includes(detail)) {
+            $('#list-keys').append($('<li></li>')
+                .html(`<span class="text-error">${key}</span> (${detail}` +
+                    (subId !== 0 ? (': <code>' + subId + '</code> ' + subName) : '') + ')')
+            );
+            unusedKeys.push(key);
         }
     }
 
@@ -268,6 +292,8 @@
     }
 
     function tableUpdateRedeemResult(key, result, detail, subId, subName) {
+        updateUnusedKeys(key, result, detail, subId, subName);
+
         let rowObjects = $('#redeem-records tr');
         for (let i = rowObjects.length - 1; i >= 1; i--) {
             let row = $(rowObjects[i]);
@@ -414,6 +440,13 @@
         'DoesNotOwnRequiredApp': '缺少DLC所需的主游戏',
         'RestrictedCountry': '无法在该区域激活',
     };
+
+    const UnusedKeyReasons = [
+        PurchaseResults.AlreadyPurchased,
+        PurchaseResults.RateLimited,
+        PurchaseResults.DoesNotOwnRequiredApp,
+        PurchaseResults.RestrictedCountry,
+    ];
 
     const RedeemResults = {
         'OK': RedeemStatus.OK,

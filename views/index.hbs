@@ -187,6 +187,10 @@
                 <table class="table table-striped table-hover table-scroll">
                     <h4 class="text-center text-gray">
                         # 激活记录
+                        <button class="btn btn-error btn-sm tooltip tooltip-right" data-tooltip="显示未使用的KEY"
+                                onclick="$('#modal-keys').addClass('active')">
+                            <i class="icon icon-menu"></i>
+                        </button>
                     </h4>
                     <thead>
                     <tr>
@@ -199,6 +203,21 @@
                     <tbody>
                     </tbody>
                 </table>
+            </div>
+            <div class="modal modal-lg" id="modal-keys">
+                <a class="modal-overlay"></a>
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <a class="btn btn-clear float-right" aria-label="Close"></a>
+                        <div class="modal-title h5">可能未使用的KEY（不包含网络超时的）：</div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="content">
+                            <ul id="list-keys">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
