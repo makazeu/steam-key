@@ -229,7 +229,7 @@
 
     function countRedeemTimeout(id) {
         setTimeout(() => {
-            setRecordStatusInfo(id, RedeemStatus.TIMEDOUT, Texts.REDEEMING_TIMEDOUT);
+            setRecordStatusInfo(id, RedeemStatus.TIMEOUT, Texts.REDEEMING_TIMEOUT);
         }, RedeemTimeoutSeconds * 1000);
     }
 
@@ -387,7 +387,7 @@
         REDEEMING: '<span class="label label-primary">激活中</span>',
         OK: '<span class="label label-success">成功</span>',
         FAILED: '<span class="label label-error">失败</span>',
-        TIMEDOUT: '<span class="label secondary">超时</span>',
+        TIMEOUT: '<span class="label secondary">超时</span>',
     };
 
     const Texts = {
@@ -395,7 +395,7 @@
         LOGGING_STEAM: '正在登录Steam，请稍候...',
         LOGIN_FAILED: '登录失败，原因：',
         INPUT_INCORRECT: '喵！请正确地输入信息！',
-        REDEEMING_TIMEDOUT: '激活超时，若未入库请重试',
+        REDEEMING_TIMEOUT: '激活超时，若未入库请重试',
     };
 
     const ErrorTexts = {

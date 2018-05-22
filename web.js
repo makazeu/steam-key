@@ -4,17 +4,11 @@ const path = require('path');
 
 module.exports = app => {
     // read config file
-    let serverBy;
     let version;
     try {
-        let serverConfig = require('./config');
-        serverBy = serverConfig['serverBy'];
-        if (serverBy !== undefined && serverBy.trim() === '') serverBy = null;
-        let versionFile = require('./version');
-        version = versionFile['version'];
+        version = require('./version').version;
     } catch (err) {
-        serverBy = null;
-        version = 'Unknown version';
+        version = 'UnknownVersion';
     }
 
     // template engine
