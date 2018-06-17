@@ -20,6 +20,14 @@ a:active {
     text-decoration: none;
 }
 
+.site-title a {
+    color: #acb3c2;
+}
+
+.site-title a:hover {
+    color: #F65;
+}
+
 .footer {
     color: #acb3c2;
     padding: .5rem .5rem .5rem .5rem;

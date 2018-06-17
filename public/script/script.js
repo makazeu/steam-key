@@ -33,6 +33,11 @@
         $('textarea').on('input', () => {
             let keys = searchKeyByRegExp($('textarea').val());
             $('#button-redeem').attr('data-badge', keys.length);
+            if (keys.length > 0) {
+                elementEnable('#button-redeem');
+            } else {
+                elementDisable('#button-redeem');
+            }
         });
 
         $('#button-redeem').click(() => redeemKeys());
@@ -214,7 +219,6 @@
 
         $('textarea').val('');
         $('#button-redeem').attr('data-badge', 0);
-        elementEnable('#button-redeem');
         scrollToId('redeem-records');
 
         tryRedeemKeys(keysToRedeem);
