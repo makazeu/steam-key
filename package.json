@@ -16,9 +16,9 @@
     "express": "^4.16.3",
     "hbs": "^4.0.1",
     "path": "^0.12.7",
-    "request": "^2.85.0",
+    "request": "^2.87.0",
     "steam-user": "git+https://github.com/DoctorMcKay/node-steam-user.git",
-    "ws": "^5.1.1",
+    "ws": "^6.0.0",
     "xml2js": "^0.4.19"
   }
 }

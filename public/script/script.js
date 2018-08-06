@@ -7,6 +7,7 @@
 
     let loggedIn = false;
     let unusedKeys = [];
+    let inputStatus;
 
     const AutoDivideThreshold = 9;
     const RedeemTimeoutSeconds = 15;
@@ -35,8 +36,10 @@
             $('#button-redeem').attr('data-badge', keys.length);
             if (keys.length > 0) {
                 elementEnable('#button-redeem');
+                inputStatus = InputStatus.KEY_INPUT;
             } else {
                 elementDisable('#button-redeem');
+                inputStatus = InputStatus.NONE_INPUT;
             }
         });
 
@@ -67,6 +70,7 @@
             setServerStatus(ServerStatus.DISCONNECTED);
             elementDisable('#button-login');
             elementDisable('#button-redeem');
+            inputStatus = InputStatus.NONE_INPUT;
         };
     }
 
@@ -98,6 +102,7 @@
         $('#text-server-name').text(data.server);
         elementEnable('#button-login');
         setServerStatus(ServerStatus.CONNECTED);
+        inputStatus = InputStatus.LOGIN_INPUT;
     }
 
     function doLoginSteam() {
@@ -110,6 +115,7 @@
             return;
         }
 
+        inputStatus = InputStatus.NONE_INPUT;
         wsSend({
             action: 'logOn',
             username: username,
@@ -119,6 +125,7 @@
     }
 
     function requireAuthCode() {
+        inputStatus = InputStatus.AUTH_INPUT;
         $('#authcode-modal').addClass('active');
     }
 
@@ -128,6 +135,7 @@
             return;
         }
 
+        inputStatus = InputStatus.NONE_INPUT;
         wsSend({
             action: 'authCode',
             authCode: authcode,
@@ -151,9 +159,11 @@
             $('#toast-info-wrapper').fadeOut();
             elementOut('#form-login');
             elementIn('#form-redeem');
+            inputStatus = InputStatus.KEY_INPUT;
         } else if (data.result === 'failed') {
             let errMsg = ErrorTexts[data.message] || data.message;
             $('#toast-info').text(Texts.LOGIN_FAILED + errMsg);
+            inputStatus = InputStatus.LOGIN_INPUT;
         }
     }
 
@@ -203,6 +213,7 @@
         }
         elementDisable('#button-redeem');
         elementIn('#redeem-records');
+        inputStatus = InputStatus.NONE_INPUT;
 
         let keyNum = 0;
         let keysToRedeem = [];
@@ -412,6 +423,13 @@
         DISCONNECTED: 'disconnected',
     };
 
+    const InputStatus = {
+        LOGIN_INPUT: 'login',
+        AUTH_INPUT: 'auth',
+        KEY_INPUT: 'key',
+        NONE_INPUT: 'none',
+    };
+
     const RedeemStatus = {
         WAITING: '<span class="label label-warning">等待中</span>',
         REDEEMING: '<span class="label label-primary">激活中</span>',
@@ -433,6 +451,7 @@
         'TwoFactorCodeMismatch': '安全令错误',
         'LimitedAccount': '受限用户暂无法使用',
         'AuthCodeError': '验证码有误',
+        'RateLimitExceeded': '失败次数过多',
     };
 
     const PurchaseResults = {
@@ -462,6 +481,24 @@
     if (!checkWebSocket()) {
         alert(Texts.BROWSER_NOT_SUPPORTED);
     }
+
+    inputStatus = InputStatus.NONE_INPUT;
+    $('body').bind('keypress', e => {
+        let event = e || window.event;
+        let code = event.keyCode || event.which || event.charCode;
+        if (code === 13) {
+            e.preventDefault();
+
+            if (inputStatus === InputStatus.LOGIN_INPUT) {
+                $('#button-login').click();
+            } else if (inputStatus === InputStatus.AUTH_INPUT) {
+                $('#button-authcode').click();
+            } else if (inputStatus === InputStatus.KEY_INPUT) {
+                $('#button-redeem').click();
+            }
+        }
+    });
+
     init();
     connectWs();
 })();
