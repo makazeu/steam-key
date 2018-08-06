@@ -22,6 +22,9 @@
         $('#modal-keys').find('[aria-label="Close"]').click(() => {
             $('#modal-keys').removeClass('active');
         });
+        $('#modal-coupon').find('[aria-label="Close"]').click(() => {
+            $('#modal-coupon').removeClass('active');
+        });
         $('#button-login').click(() => {
             elementDisable('#input-username');
             elementDisable('#input-password');
