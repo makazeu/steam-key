@@ -54,7 +54,7 @@
     }
 
     function connectWs() {
-        let protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+        let protocol = location.protocol === 'https' ? 'wss' : 'ws';
         ws = new WebSocket(`${protocol}://${location.host}/ws`);
 
         setServerStatus(ServerStatus.CONNECTING);
