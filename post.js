@@ -34,7 +34,6 @@ function doPost(options) {
         request(options, (error, response, body) => {
             if (!error) {
                 resolve(body);
-                console.log("www")
             } else {
                 reject(error);
             }
